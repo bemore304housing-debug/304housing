@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>304 Housing — ระบบหลังบ้าน</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; }
+        .theme-green { color: #1e4620; }
+        .bg-theme-green { background-color: #1e4620; }
+        .spinner { border: 3px solid #e5e7eb; border-top-color: #1e4620;
+                   border-radius: 50%; width: 20px; height: 20px;
+                   animation: spin .7s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-60 bg-slate-900 text-slate-200 flex-col justify-between hidden md:flex flex-shrink-0">
+        <div class="p-4 space-y-6">
+            <div class="flex items-center space-x-2 border-b border-slate-800 pb-4">
+                <span class="font-extrabold text-xl bg-white theme-green px-2 py-0.5 rounded shadow-sm">304</span>
+                <span class="text-sm font-bold tracking-wide">ระบบหลังบ้าน</span>
+            </div>
+            <nav class="space-y-1 text-sm">
+                <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-green-800 text-white font-semibold">
+                    <i class="fa-solid fa-chart-pie w-5"></i><span>ภาพรวม & KPI</span>
+                </a>
+                <a href="#queue" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-clipboard-check w-5 text-amber-400"></i><span>คิวคัดกรองทรัพย์</span>
+                </a>
+                <a href="#contracts" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-file-signature w-5 text-blue-400"></i><span>แจ้งเตือนสัญญา</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-slate-800 text-center text-xs text-slate-500 font-mono">
+            304 Housing v1.0
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        <!-- Topbar -->
+        <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-30">
+            <h1 class="text-base font-bold text-gray-800">📊 ระบบหลังบ้าน 304 Housing by Be More</h1>
+            <div class="flex items-center gap-3">
+                <button onclick="loadDashboard()" class="text-xs text-green-700 border border-green-300 px-3 py-1.5 rounded-lg hover:bg-green-50 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-right"></i> รีโหลด
+                </button>
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <i class="fa-solid fa-circle-user text-xl text-slate-700"></i>
+                    <span class="font-semibold">ผู้ดูแลระบบ</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-6 space-y-6 max-w-6xl w-full mx-auto">
+
+            <!-- KPI Cards -->
+            <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase">ทรัพย์เผยแพร่แล้ว</p>
+                        <p id="kpi-published" class="text-2xl font-black text-green-700 mt-1">—</p>
+                    </div>
+                    <div class="p-3 bg-green-50 rounded-lg text-green-700"><i class="fa-solid fa-house text-xl"></i></div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase">รอคัดกรอง</p>
+                        <p id="kpi-pending" class="text-2xl font-black text-amber-600 mt-1">—</p>
+                    </div>
+                    <div class="p-3 bg-amber-50 rounded-lg text-amber-600"><i class="fa-solid fa-hourglass-half text-xl"></i></div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase">สัญญาใกล้หมดอายุ (2 เดือน)</p>
+                        <p id="kpi-expiring" class="text-2xl font-black text-red-600 mt-1">—</p>
+                    </div>
+                    <div class="p-3 bg-red-50 rounded-lg text-red-600"><i class="fa-solid fa-bell text-xl"></i></div>
+                </div>
+            </section>
+
+            <!-- Demand Chart -->
+            <section class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <div class="mb-4">
+                    <h3 class="text-sm font-bold text-gray-800">
+                        <i class="fa-solid fa-chart-column theme-green mr-1.5"></i>
+                        ดีมานด์รอบนิคม 304 จำแนกตามโรงงาน
+                    </h3>
+                    <p class="text-xs text-gray-400 mt-0.5">ข้อมูลจำลอง — จะดึงจากสถิติจริงเมื่อระบบ LINE เชื่อมต่อครบ</p>
+                </div>
+                <div class="h-56">
+                    <canvas id="demandChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Submission Queue -->
+            <section id="queue" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-slate-50 flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-slate-800">
+                        <i class="fa-solid fa-clipboard-list text-amber-500 mr-1.5"></i>
+                        รายการฝากทรัพย์รอคัดกรอง
+                    </h3>
+                    <span id="queue-badge" class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold hidden">รอดำเนินการ</span>
+                </div>
+                <div id="queue-loading" class="p-8 text-center">
+                    <div class="spinner mx-auto mb-2"></div>
+                    <p class="text-xs text-gray-400">กำลังโหลดจาก Google Sheets...</p>
+                </div>
+                <div id="queue-empty" class="p-8 text-center hidden">
+                    <p class="text-2xl mb-2">✅</p>
+                    <p class="text-sm text-gray-400">ไม่มีรายการรอคัดกรอง</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead id="queue-thead" class="bg-slate-100 text-slate-600 uppercase font-bold border-b border-gray-200 hidden">
+                            <tr>
+                                <th class="p-3">ผู้ฝาก / เบอร์</th>
+                                <th class="p-3">ประเภท</th>
+                                <th class="p-3">ระยะ</th>
+                                <th class="p-3">ราคา</th>
+                                <th class="p-3">รูป</th>
+                                <th class="p-3 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queue-body" class="divide-y divide-gray-100 text-gray-700"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Contract Alerts -->
+            <section id="contracts" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <div class="mb-4">
+                    <h3 class="text-sm font-bold text-gray-800">
+                        <i class="fa-solid fa-file-contract text-blue-500 mr-1.5"></i>
+                        แจ้งเตือนสัญญาเช่าใกล้หมดอายุ (ล่วงหน้า 2 เดือน)
+                    </h3>
+                </div>
+                <div id="contracts-body">
+                    <div class="text-center py-4">
+                        <div class="spinner mx-auto mb-2"></div>
+                        <p class="text-xs text-gray-400">กำลังโหลด...</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyImV3TojFXsq3s8v4rLtfkQcOfoyT44DmuNrGgEDc3uEF3cN47aUmT8_6gAdu1YFo/exec";
+
+// ---- Demand Chart (mock data - จะต่อ API ภายหลัง) ----
+const ctx = document.getElementById('demandChart').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Canon', 'Toshiba', 'Hitachi', 'Double A', 'อื่นๆ'],
+        datasets: [{
+            label: 'จำนวนความต้องการ (ครั้ง)',
+            data: [42, 28, 19, 35, 14],
+            backgroundColor: '#1e4620',
+            borderRadius: 6,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false } }
+        }
+    }
+});
+
+// ---- Load Dashboard ----
+async function loadDashboard() {
+    try {
+        const [dashRes, subRes] = await Promise.all([
+            fetch(`${WEB_APP_URL}?action=getDashboard`).then(r => r.json()),
+            fetch(`${WEB_APP_URL}?action=getSubmissions`).then(r => r.json())
+        ]);
+
+        // KPI
+        if (dashRes.status === 'success') {
+            document.getElementById('kpi-published').textContent = dashRes.published_count ?? 0;
+            document.getElementById('kpi-pending').textContent   = dashRes.pending_count ?? 0;
+            document.getElementById('kpi-expiring').textContent  = dashRes.expiring_count ?? 0;
+            renderContracts(dashRes.expiring_list || []);
+        }
+
+        // Queue
+        if (subRes.status === 'success') {
+            renderQueue(subRes.submissions || []);
+        }
+    } catch (err) {
+        document.getElementById('queue-loading').innerHTML =
+            `<p class="text-red-500 text-xs">❌ โหลดล้มเหลว: ${err.message}</p>`;
+    }
+}
+
+function renderQueue(submissions) {
+    const loading = document.getElementById('queue-loading');
+    const empty   = document.getElementById('queue-empty');
+    const thead   = document.getElementById('queue-thead');
+    const tbody   = document.getElementById('queue-body');
+    const badge   = document.getElementById('queue-badge');
+
+    loading.classList.add('hidden');
+    tbody.innerHTML = '';
+
+    if (!submissions.length) {
+        empty.classList.remove('hidden');
+        thead.classList.add('hidden');
+        return;
+    }
+
+    empty.classList.add('hidden');
+    thead.classList.remove('hidden');
+    badge.classList.remove('hidden');
+
+    submissions.forEach((s, i) => {
+        const row     = s._row;
+        const imgHtml = s.image_url
+            ? `<img src="${s.image_url.split(',')[0].trim()}" class="w-12 h-10 object-cover rounded-lg">`
+            : `<span class="text-gray-300 text-lg">📷</span>`;
+
+        const tr = document.createElement('tr');
+        tr.id = `sub-row-${i}`;
+        tr.dataset.row = row;
+        tr.innerHTML = `
+            <td class="p-3 font-semibold text-gray-900">
+                ${s.owner_name || '—'}<br>
+                <span class="font-normal text-gray-400">${s.owner_phone || ''}</span>
+            </td>
+            <td class="p-3">${s.property_type || '—'}</td>
+            <td class="p-3 font-mono">${s.distance_to_industrial || '—'} km</td>
+            <td class="p-3 font-bold text-green-700">
+                ${s.rent_price ? Number(s.rent_price).toLocaleString() + ' /ด.' : '—'}
+            </td>
+            <td class="p-3">${imgHtml}</td>
+            <td class="p-3 text-center space-x-1.5">
+                <button onclick="approveProperty('sub-row-${i}', ${row})"
+                    class="bg-green-700 text-white px-2.5 py-1 rounded-md font-bold text-xs hover:bg-green-800 transition">
+                    ✅ อนุมัติ
+                </button>
+                <button onclick="rejectProperty('sub-row-${i}', ${row})"
+                    class="bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 rounded-md font-bold text-xs hover:bg-red-100 transition">
+                    ❌ ตีกลับ
+                </button>
+            </td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+async function approveProperty(rowId, sheetRow) {
+    if (!confirm('ยืนยันการอนุมัติทรัพย์นี้?')) return;
+    const btn = document.querySelector(`#${rowId} button`);
+    if (btn) { btn.disabled = true; btn.textContent = '⏳...'; }
+
+    try {
+        const fd = new FormData();
+        fd.append('action', 'approve');
+        fd.append('row', sheetRow);
+        const res  = await fetch(WEB_APP_URL, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.status === 'success') {
+            alert(`🎉 อนุมัติสำเร็จ! รหัสทรัพย์: ${json.property_code}`);
+            document.getElementById(rowId)?.remove();
+            loadDashboard();
+        } else throw new Error(json.message);
+    } catch (err) {
+        alert('❌ อนุมัติไม่สำเร็จ: ' + err.message);
+        if (btn) { btn.disabled = false; btn.textContent = '✅ อนุมัติ'; }
+    }
+}
+
+async function rejectProperty(rowId, sheetRow) {
+    const reason = prompt('ระบุเหตุผลการตีกลับ:', 'ข้อมูลรูปภาพไม่ชัดเจน / ข้อมูลไม่ครบถ้วน');
+    if (!reason) return;
+    try {
+        const fd = new FormData();
+        fd.append('action', 'reject');
+        fd.append('row', sheetRow);
+        fd.append('reason', reason);
+        const res  = await fetch(WEB_APP_URL, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.status === 'success') {
+            alert('📋 ตีกลับเรียบร้อย — ระบบบันทึกเหตุผลแล้ว');
+            document.getElementById(rowId)?.remove();
+            loadDashboard();
+        } else throw new Error(json.message);
+    } catch (err) {
+        alert('❌ ตีกลับไม่สำเร็จ: ' + err.message);
+    }
+}
+
+function renderContracts(list) {
+    const el = document.getElementById('contracts-body');
+    if (!list.length) {
+        el.innerHTML = `<div class="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 text-center">
+            ✅ ไม่มีสัญญาที่ใกล้หมดอายุในช่วง 2 เดือนข้างหน้า
+        </div>`;
+        return;
+    }
+    el.innerHTML = list.map(c => `
+        <div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div class="flex items-start space-x-3">
+                <i class="fa-solid fa-triangle-exclamation text-red-500 text-lg mt-0.5"></i>
+                <div>
+                    <p class="text-xs font-bold text-red-900">สัญญา ${c.contract_code} ใกล้หมดอายุ</p>
+                    <p class="text-xs text-red-700 mt-0.5">ทรัพย์: ${c.property_code} | ผู้เช่า: ${c.tenant_name} | หมดอายุ: ${c.expiry_date}</p>
+                </div>
+            </div>
+            <button onclick="alert('📨 จำลองการส่ง LINE แจ้งเตือนต่อสัญญาแล้วครับ')"
+                class="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-red-700 transition whitespace-nowrap">
+                <i class="fa-solid fa-paper-plane mr-1"></i> ส่งแจ้งเตือน
+            </button>
+        </div>`).join('');
+}
+
+// โหลดทันทีเมื่อเปิดหน้า
+loadDashboard();
+</script>
+</body>
+</html>

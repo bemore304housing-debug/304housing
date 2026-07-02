@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>304 Housing — ค้นหาทรัพย์ (เฉพาะทีม Admin)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; }
+        .theme-green { color: #1e4620; }
+        .bg-theme-green { background-color: #1e4620; }
+        .bg-theme-green:hover { background-color: #143216; }
+        .card-img { width: 100%; height: 180px; object-fit: cover; }
+        .lang-btn { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; transition: all .15s; }
+        .lang-btn.active { background: white; color: #1e4620; }
+        .lang-btn.inactive { color: #bbf7d0; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Navbar -->
+<nav class="bg-theme-green text-white px-4 py-3 sticky top-0 z-50 shadow-md">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="flex items-center space-x-2">
+            <span class="font-bold text-lg bg-white theme-green px-2 py-0.5 rounded">304</span>
+            <span class="font-semibold text-sm">Housing — ค้นหาทรัพย์ (Admin)</span>
+        </div>
+        <div class="flex bg-green-900/50 p-1 rounded-lg border border-green-700 gap-0.5">
+            <button onclick="changeLang('th')" id="btn-th" class="lang-btn active">TH</button>
+            <button onclick="changeLang('en')" id="btn-en" class="lang-btn inactive">EN</button>
+            <button onclick="changeLang('zh')" id="btn-zh" class="lang-btn inactive">中文</button>
+            <button onclick="changeLang('ja')" id="btn-ja" class="lang-btn inactive">日本語</button>
+        </div>
+    </div>
+</nav>
+
+<!-- Search Header -->
+<header class="bg-white border-b border-gray-200 py-6 px-4">
+    <div class="max-w-6xl mx-auto">
+        <h2 id="txt-title" class="text-xl font-bold text-gray-800 mb-4"></h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div>
+                <label id="lbl-type" class="block text-xs font-bold text-gray-500 mb-1"></label>
+                <select id="filter-type" onchange="filterProperties()"
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    <option value="all" id="opt-all"></option>
+                    <option value="ทาวน์โฮม" id="opt-townhome"></option>
+                    <option value="บ้านเดี่ยว" id="opt-house"></option>
+                    <option value="คอนโด" id="opt-condo"></option>
+                    <option value="หอพัก/อพาร์ทเม้นท์" id="opt-apt"></option>
+                </select>
+            </div>
+            <div>
+                <label id="lbl-distance" class="block text-xs font-bold text-gray-500 mb-1"></label>
+                <select id="filter-distance" onchange="filterProperties()"
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    <option value="99" id="opt-dist-all"></option>
+                    <option value="2" id="opt-dist-2"></option>
+                    <option value="5" id="opt-dist-5"></option>
+                </select>
+            </div>
+            <div>
+                <label id="lbl-budget" class="block text-xs font-bold text-gray-500 mb-1"></label>
+                <select id="filter-budget" onchange="filterProperties()"
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    <option value="999999" id="opt-budget-all"></option>
+                    <option value="8000" id="opt-budget-8k"></option>
+                    <option value="12000" id="opt-budget-12k"></option>
+                    <option value="20000" id="opt-budget-20k"></option>
+                </select>
+            </div>
+            <div>
+                <label id="lbl-shuttle" class="block text-xs font-bold text-gray-500 mb-1"></label>
+                <select id="filter-shuttle" onchange="filterProperties()"
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    <option value="all" id="opt-shuttle-all"></option>
+                    <option value="ผ่าน" id="opt-shuttle-yes"></option>
+                </select>
+            </div>
+            <div>
+                <label id="lbl-district" class="block text-xs font-bold text-gray-500 mb-1"></label>
+                <select id="filter-district" onchange="filterProperties()"
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    <option value="all" id="opt-district-all"></option>
+                </select>
+            </div>
+            <div>
+                <label id="lbl-sub-district" class="block text-xs font-bold text-gray-500 mb-1"></label>
+                <select id="filter-sub-district" onchange="filterProperties()"
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    <option value="all" id="opt-sub-district-all"></option>
+                </select>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Results -->
+<main class="max-w-6xl mx-auto px-4 py-8">
+    <div id="loading-text" class="text-center text-gray-500 py-16">
+        <i class="fa-solid fa-spinner animate-spin text-3xl theme-green mb-3"></i>
+        <p id="loading-msg" class="text-sm mt-2"></p>
+    </div>
+    <div id="result-count" class="text-xs text-gray-400 mb-4 hidden"></div>
+    <div id="properties-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
+    <div id="empty-state" class="text-center py-16 hidden">
+        <div class="text-5xl mb-3">🔍</div>
+        <p id="empty-msg" class="text-gray-400 text-sm"></p>
+    </div>
+</main>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyImV3TojFXsq3s8v4rLtfkQcOfoyT44DmuNrGgEDc3uEF3cN47aUmT8_6gAdu1YFo/exec";
+const PLACEHOLDER = "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=500&q=80";
+
+const T = {
+    th: {
+        title: "🏠 ค้นหาและจัดการทรัพย์ — นิคม 304 (Admin)",
+        lblType: "ประเภทที่อยู่อาศัย", lblDistance: "ระยะทางถึงนิคม 304", lblBudget: "งบประมาณ", lblShuttle: "รถรับส่งโรงงาน",
+        lblDistrict: "อำเภอ", lblSubDistrict: "ตำบล",
+        optAll: "— ทั้งหมด —", optTownhome: "ทาวน์โฮม", optHouse: "บ้านเดี่ยว", optCondo: "คอนโด / อพาร์ตเมนต์", optApt: "หอพัก / อพาร์ทเม้นท์",
+        optDistAll: "— ทุกระยะทาง —", optDist2: "ไม่เกิน 2 กม.", optDist5: "ไม่เกิน 5 กม.",
+        optBudgetAll: "— ทุกราคา —", optBudget8k: "ไม่เกิน 8,000 บาท", optBudget12k: "ไม่เกิน 12,000 บาท", optBudget20k: "ไม่เกิน 20,000 บาท",
+        optShuttleAll: "— ทุกประเภท —", optShuttleYes: "มีรถรับส่งผ่าน",
+        optDistrictAll: "— ทุกอำเภอ —", optSubDistrictAll: "— ทุกตำบล —",
+        rent: "ค่าเช่า", month: "บาท/เดือน", distText: "ห่างนิคม 304",
+        shuttle: "🚌 รถรับส่งโรงงานผ่าน", tm30: "🌐 รับต่างชาติ + TM30", pets: "🐾 เลี้ยงสัตว์ได้",
+        btnView: "📅 นัดชมห้อง", loading: "กำลังโหลดข้อมูลจาก Google Sheets...",
+        empty: "ไม่พบทรัพย์ที่ตรงเงื่อนไข — ลองเปลี่ยนตัวกรอง",
+        results: (n) => `พบ ${n} รายการ`
+    },
+    en: {
+        title: "🔍 Find Rentals near 304 Industrial Park (Live)",
+        lblType: "Property Type", lblDistance: "Distance to 304 IP", lblBudget: "Budget", lblShuttle: "Shuttle Bus",
+        lblDistrict: "District", lblSubDistrict: "Sub-district",
+        optAll: "— All —", optTownhome: "Townhome", optHouse: "House", optCondo: "Condo / Apartment", optApt: "Dormitory / Apartment",
+        optDistAll: "— Any Distance —", optDist2: "Within 2 km", optDist5: "Within 5 km",
+        optBudgetAll: "— Any Price —", optBudget8k: "≤ 8,000 THB", optBudget12k: "≤ 12,000 THB", optBudget20k: "≤ 20,000 THB",
+        optShuttleAll: "— All —", optShuttleYes: "Has Shuttle Bus",
+        optDistrictAll: "— All Districts —", optSubDistrictAll: "— All Sub-districts —",
+        rent: "Rent", month: "THB/mo", distText: "From 304 IP",
+        shuttle: "🚌 Shuttle Bus Passes", tm30: "🌐 Foreigner Friendly + TM30", pets: "🐾 Pets Allowed",
+        btnView: "📅 Schedule Viewing", loading: "Loading from Google Sheets...",
+        empty: "No properties found — try adjusting filters",
+        results: (n) => `${n} properties found`
+    },
+    zh: {
+        title: "🔍 寻找 304 工业园附近的租房（实时数据）",
+        lblType: "物业类型", lblDistance: "到工业园距离", lblBudget: "预算", lblShuttle: "工厂接驳车",
+        lblDistrict: "县区", lblSubDistrict: "乡镇",
+        optAll: "— 全部 —", optTownhome: "联排别墅", optHouse: "独栋别墅", optCondo: "公寓", optApt: "宿舍/公寓",
+        optDistAll: "— 不限距离 —", optDist2: "2公里内", optDist5: "5公里内",
+        optBudgetAll: "— 不限价格 —", optBudget8k: "≤ 8,000 泰铢", optBudget12k: "≤ 12,000 泰铢", optBudget20k: "≤ 20,000 泰铢",
+        optShuttleAll: "— 全部 —", optShuttleYes: "有工厂接驳车",
+        optDistrictAll: "— 全部县区 —", optSubDistrictAll: "— 全部乡镇 —",
+        rent: "租金", month: "泰铢/月", distText: "距304工业区",
+        shuttle: "🚌 厂车经过", tm30: "🌐 欢迎外籍 + TM30", pets: "🐾 可养宠物",
+        btnView: "📅 预约看房", loading: "正在加载数据...",
+        empty: "未找到符合条件的房源",
+        results: (n) => `找到 ${n} 套房源`
+    },
+    ja: {
+        title: "🔍 304工業団地周辺の賃貸物件（リアルタイム）",
+        lblType: "物件タイプ", lblDistance: "工業団地までの距離", lblBudget: "予算", lblShuttle: "送迎バス",
+        lblDistrict: "郡/区", lblSubDistrict: "タンボン",
+        optAll: "— 全て —", optTownhome: "タウンハウス", optHouse: "一戸建て", optCondo: "コンドミニアム", optApt: "寮/アパート",
+        optDistAll: "— 全距離 —", optDist2: "2km以内", optDist5: "5km以内",
+        optBudgetAll: "— 全価格 —", optBudget8k: "8,000バーツ以下", optBudget12k: "12,000バーツ以下", optBudget20k: "20,000バーツ以下",
+        optShuttleAll: "— 全て —", optShuttleYes: "送迎バスあり",
+        optDistrictAll: "— 全郡/区 —", optSubDistrictAll: "— 全タンボン —",
+        rent: "家賃", month: "バーツ/月", distText: "304工業団地から",
+        shuttle: "🚌 送迎バスルート沿い", tm30: "🌐 外国人可 ＋ TM30", pets: "🐾 ペット相談可",
+        btnView: "📅 内見を予約", loading: "データを読み込んでいます...",
+        empty: "条件に合う物件が見つかりません",
+        results: (n) => `${n}件の物件が見つかりました`
+    }
+};
+
+let rawProperties = [];
+let currentLang = 'th';
+
+function applyTranslations() {
+    const t = T[currentLang];
+    document.getElementById('txt-title').textContent      = t.title;
+    document.getElementById('lbl-type').textContent       = t.lblType;
+    document.getElementById('lbl-distance').textContent   = t.lblDistance;
+    document.getElementById('lbl-budget').textContent     = t.lblBudget;
+    document.getElementById('lbl-shuttle').textContent    = t.lblShuttle;
+    document.getElementById('opt-all').textContent        = t.optAll;
+    document.getElementById('opt-townhome').textContent   = t.optTownhome;
+    document.getElementById('opt-house').textContent      = t.optHouse;
+    document.getElementById('opt-condo').textContent      = t.optCondo;
+    document.getElementById('opt-apt').textContent        = t.optApt;
+    document.getElementById('opt-dist-all').textContent   = t.optDistAll;
+    document.getElementById('opt-dist-2').textContent     = t.optDist2;
+    document.getElementById('opt-dist-5').textContent     = t.optDist5;
+    document.getElementById('opt-budget-all').textContent = t.optBudgetAll;
+    document.getElementById('opt-budget-8k').textContent  = t.optBudget8k;
+    document.getElementById('opt-budget-12k').textContent = t.optBudget12k;
+    document.getElementById('opt-budget-20k').textContent = t.optBudget20k;
+    document.getElementById('opt-shuttle-all').textContent = t.optShuttleAll;
+    document.getElementById('opt-shuttle-yes').textContent = t.optShuttleYes;
+    document.getElementById('lbl-district').textContent     = t.lblDistrict;
+    document.getElementById('lbl-sub-district').textContent = t.lblSubDistrict;
+    // Update the "all" option in dynamic dropdowns if already populated
+    const dAllOpt  = document.querySelector('#filter-district option[value="all"]');
+    if (dAllOpt)  dAllOpt.textContent  = t.optDistrictAll;
+    const sdAllOpt = document.querySelector('#filter-sub-district option[value="all"]');
+    if (sdAllOpt) sdAllOpt.textContent = t.optSubDistrictAll;
+    document.getElementById('loading-msg').textContent    = t.loading;
+}
+
+function changeLang(lang) {
+    currentLang = lang;
+    ['th','en','zh','ja'].forEach(l => {
+        const btn = document.getElementById('btn-' + l);
+        btn.className = 'lang-btn ' + (l === lang ? 'active' : 'inactive');
+    });
+    applyTranslations();
+    filterProperties();
+}
+
+async function loadProperties() {
+    try {
+        const res  = await fetch(`${WEB_APP_URL}?action=getProperties`);
+        const json = await res.json();
+        document.getElementById('loading-text').classList.add('hidden');
+        document.getElementById('properties-grid').classList.remove('hidden');
+        if (json.status === 'success') {
+            rawProperties = json.properties;
+            console.log('🖼️ Image URLs:', rawProperties.map(p => ({id: p.id, img: p.image_url || '(ว่าง)'})));
+            populateLocationFilters();
+            filterProperties();
+        } else {
+            showError(json.message);
+        }
+    } catch (err) {
+        document.getElementById('loading-text').innerHTML =
+            `<div class="text-red-500"><i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i><p class="text-sm mt-2">โหลดข้อมูลล้มเหลว<br>${err.message}</p></div>`;
+    }
+}
+
+function filterProperties() {
+    const type        = document.getElementById('filter-type').value;
+    const maxDist     = parseFloat(document.getElementById('filter-distance').value);
+    const maxBudget   = parseFloat(document.getElementById('filter-budget').value);
+    const shuttle     = document.getElementById('filter-shuttle').value;
+    const district    = document.getElementById('filter-district').value;
+    const subDistrict = document.getElementById('filter-sub-district').value;
+
+    const filtered = rawProperties.filter(p =>
+        (type === 'all'        || p.type === type) &&
+        (p.distance <= maxDist) &&
+        (p.price <= maxBudget) &&
+        (shuttle === 'all'     || p.shuttle === shuttle) &&
+        (district === 'all'    || p.district === district) &&
+        (subDistrict === 'all' || p.sub_district === subDistrict)
+    );
+
+    renderProperties(filtered);
+}
+
+function populateLocationFilters() {
+    const t = T[currentLang];
+    const districts    = [...new Set(rawProperties.map(p => p.district).filter(Boolean))].sort();
+    const subDistricts = [...new Set(rawProperties.map(p => p.sub_district).filter(Boolean))].sort();
+
+    const dSel = document.getElementById('filter-district');
+    dSel.innerHTML = `<option value="all">${t.optDistrictAll}</option>`;
+    districts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d; opt.textContent = d;
+        dSel.appendChild(opt);
+    });
+
+    const sdSel = document.getElementById('filter-sub-district');
+    sdSel.innerHTML = `<option value="all">${t.optSubDistrictAll}</option>`;
+    subDistricts.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        sdSel.appendChild(opt);
+    });
+}
+
+function renderProperties(data) {
+    const grid  = document.getElementById('properties-grid');
+    const empty = document.getElementById('empty-state');
+    const count = document.getElementById('result-count');
+    const t     = T[currentLang];
+
+    grid.innerHTML  = '';
+    empty.classList.add('hidden');
+    count.classList.remove('hidden');
+    count.textContent = t.results(data.length);
+
+    if (!data.length) {
+        grid.classList.add('hidden');
+        empty.classList.remove('hidden');
+        document.getElementById('empty-msg').textContent = t.empty;
+        return;
+    }
+
+    grid.classList.remove('hidden');
+
+    data.forEach(p => {
+        // รองรับ image_url แบบ comma-separated หลายรูป
+        const imgs = (p.image_url || "").split(",").map(u => u.trim()).filter(Boolean);
+        if (!imgs.length) imgs.push(PLACEHOLDER);
+        const cardId = 'card-' + p.id.replace(/[^a-zA-Z0-9]/g, '');
+
+        const card   = document.createElement('div');
+        card.className = 'bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition';
+        card.innerHTML = `
+            <div class="relative overflow-hidden" style="height:200px">
+                <div id="${cardId}-slides" class="flex h-full transition-transform duration-300" style="width:${imgs.length*100}%">
+                    ${imgs.map(u => `<div style="width:${100/imgs.length}%;flex-shrink:0;height:100%">
+                        <img src="${u}" style="width:100%;height:100%;object-fit:cover"
+                             onerror="this.closest('div').style.background='#f3f4f6';this.style.display='none'" alt="${p.type}">
+                    </div>`).join('')}
+                </div>
+                ${imgs.length > 1 ? `
+                <button onclick="slideImg(event,'${cardId}',-1)" class="absolute left-1 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center hover:bg-black/60">‹</button>
+                <button onclick="slideImg(event,'${cardId}',1)"  class="absolute right-1 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center hover:bg-black/60">›</button>
+                <div class="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+                    ${imgs.map((_,i) => `<div id="${cardId}-dot-${i}" class="w-1.5 h-1.5 rounded-full ${i===0?'bg-white':'bg-white/40'}"></div>`).join('')}
+                </div>
+                ` : ''}
+            </div>
+            <div class="p-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full">${p.type}</span>
+                    <span class="text-xs font-mono text-gray-400">${p.id}</span>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400">${t.rent}</p>
+                    <p class="text-xl font-extrabold text-green-800">
+                        ${p.price.toLocaleString()}
+                        <span class="text-xs font-normal text-gray-500">${t.month}</span>
+                    </p>
+                </div>
+                <div class="text-xs text-gray-500 space-y-1.5 border-t border-gray-100 pt-2">
+                    <p>🛏️ ${p.bedrooms} ห้องนอน &nbsp;🚿 ${p.bathrooms} ห้องน้ำ</p>
+                    <p><i class="fa-solid fa-location-dot text-red-500 mr-1"></i> ${t.distText} ${p.distance} km</p>
+                    ${(p.sub_district || p.district) ? `<p><i class="fa-solid fa-map-pin text-gray-400 mr-1"></i> ${p.sub_district ? 'ต.' + p.sub_district : ''} ${p.district ? 'อ.' + p.district : ''}</p>` : ''}
+                    ${p.shuttle === 'ผ่าน' ? `<p class="text-blue-700 font-medium">${t.shuttle}</p>` : ''}
+                    ${p.tm30  ? `<p class="text-purple-700">${t.tm30}</p>` : ''}
+                    ${p.pets  ? `<p class="text-amber-700">${t.pets}</p>` : ''}
+                    ${p.appliances ? `<p class="text-gray-400 truncate">🏠 ${p.appliances}</p>` : ''}
+                </div>
+                <div class="flex gap-2 mt-1">
+                    <button onclick="bookViewing('${p.id}')"
+                        class="flex-1 bg-theme-green text-white text-xs font-bold py-2.5 rounded-xl hover:opacity-90 transition">
+                        ${t.btnView}
+                    </button>
+                    <button onclick="showPropertySheet('${p.id}')"
+                        class="px-3 bg-gray-100 text-gray-600 text-xs font-bold py-2.5 rounded-xl hover:bg-gray-200 transition" title="ใบนำเสนอ PDF">
+                        📄
+                    </button>
+                </div>
+            </div>`;
+        grid.appendChild(card);
+    });
+}
+
+function showPropertySheet(propId) {
+    const p = rawProperties.find(x => x.id === propId);
+    if (!p) return;
+    const imgs = (p.image_url || "").split(",").map(u => u.trim()).filter(Boolean);
+    const cols = imgs.length === 1 ? 1 : imgs.length === 2 ? 2 : 3;
+    const printDate = new Date().toLocaleDateString('th-TH', {year:'numeric',month:'long',day:'numeric'});
+
+    const photoHtml = imgs.length
+        ? `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;margin:10px 0">
+            ${imgs.map(u => `<img src="${u}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px" onerror="this.style.display='none'">`).join('')}
+           </div>`
+        : `<div style="height:120px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#ccc;margin:10px 0">ไม่มีรูปภาพ</div>`;
+
+    const html = `<!DOCTYPE html>
+<html lang="th"><head>
+<meta charset="UTF-8">
+<title>ใบนำเสนอ ${p.id}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:#f5f5f5;display:flex;flex-direction:column;align-items:center;padding:20px}
+.sheet{background:white;width:210mm;min-height:297mm;padding:14mm;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.brand{font-size:20px;font-weight:700;color:#14532d;line-height:1.2}
+.brand em{color:#16a34a;font-style:normal}
+.brand small{font-size:10px;font-weight:400;color:#888}
+.code-badge{background:#f0fdf4;border:1px solid #86efac;color:#166534;font-size:11px;font-family:monospace;padding:3px 8px;border-radius:6px}
+hr.divider{border:none;border-top:2.5px solid #14532d;margin:8px 0}
+.price{font-size:26px;font-weight:700;color:#14532d;margin:8px 0}
+.price small{font-size:13px;font-weight:400;color:#888}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.info-item{background:#f9fafb;border-radius:7px;padding:7px 10px}
+.info-label{font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.info-value{font-size:13px;font-weight:600;color:#1f2937}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}
+.tag{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600}
+.tag-blue{background:#dbeafe;color:#1e40af}
+.tag-purple{background:#f3e8ff;color:#6b21a8}
+.tag-amber{background:#fef3c7;color:#92400e}
+.appliances{font-size:11px;color:#6b7280;margin:6px 0;line-height:1.5}
+.footer{margin-top:auto;padding-top:10px;border-top:1.5px solid #e5e7eb;display:flex;justify-content:space-between;align-items:flex-end}
+.contact{font-size:11px;color:#6b7280;line-height:1.6}
+.contact strong{color:#14532d;font-size:13px}
+.print-date{font-size:9px;color:#d1d5db;text-align:right}
+.no-print{margin-bottom:16px;display:flex;gap:10px;justify-content:center}
+.btn{border:none;padding:10px 24px;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;cursor:pointer;font-weight:600}
+.btn-primary{background:#14532d;color:white}
+.btn-secondary{background:#f3f4f6;color:#374151}
+@media print{
+  .no-print{display:none!important}
+  body{background:white;padding:0}
+  .sheet{box-shadow:none;padding:10mm}
+  @page{size:A4;margin:0}
+}
+</style>
+</head><body>
+<div class="no-print">
+  <button class="btn btn-primary" onclick="window.print()">🖨️ บันทึก PDF / พิมพ์</button>
+  <button class="btn btn-secondary" onclick="window.close()">✕ ปิด</button>
+</div>
+<div class="sheet">
+  <div class="header">
+    <div class="brand">304 <em>Housing</em> by Be More<br><small>ใบนำเสนออสังหาริมทรัพย์ให้เช่า</small></div>
+    <div class="code-badge">${p.id}</div>
+  </div>
+  <hr class="divider">
+  ${photoHtml}
+  <div class="price">${p.price.toLocaleString()} <small>บาท / เดือน</small></div>
+  <div class="info-grid">
+    <div class="info-item"><div class="info-label">ประเภท</div><div class="info-value">${p.type}</div></div>
+    <div class="info-item"><div class="info-label">ระยะถึงนิคม 304</div><div class="info-value">${p.distance} กิโลเมตร</div></div>
+    <div class="info-item"><div class="info-label">ห้องนอน</div><div class="info-value">${p.bedrooms} ห้อง</div></div>
+    <div class="info-item"><div class="info-label">ห้องน้ำ</div><div class="info-value">${p.bathrooms} ห้อง</div></div>
+    ${p.area ? `<div class="info-item"><div class="info-label">ขนาดพื้นที่</div><div class="info-value">${p.area}</div></div>` : ''}
+    ${(p.sub_district || p.district) ? `<div class="info-item"><div class="info-label">ที่ตั้ง</div><div class="info-value">${p.sub_district ? 'ต.'+p.sub_district+' ' : ''}${p.district ? 'อ.'+p.district : ''}</div></div>` : ''}
+    ${p.address ? `<div class="info-item" style="grid-column:1/-1"><div class="info-label">ที่อยู่</div><div class="info-value" style="font-size:12px;font-weight:400">${p.address}</div></div>` : ''}
+  </div>
+  <div class="tags">
+    ${p.shuttle === 'ผ่าน' ? '<span class="tag tag-blue">🚌 มีรถรับส่งโรงงาน</span>' : ''}
+    ${p.tm30 ? '<span class="tag tag-purple">🌐 รับต่างชาติ + TM30</span>' : ''}
+    ${p.pets ? '<span class="tag tag-amber">🐾 เลี้ยงสัตว์ได้</span>' : ''}
+  </div>
+  ${p.appliances ? `<p class="appliances">🏠 เครื่องใช้ไฟฟ้า: ${p.appliances}</p>` : ''}
+  <div class="footer">
+    <div class="contact">
+      <strong>304 Housing by Be More</strong><br>
+      LINE Official: @304housingbybemore<br>
+      นิคมอุตสาหกรรม 304 จ.ปราจีนบุรี
+    </div>
+    <div class="print-date">จัดทำวันที่ ${printDate}</div>
+  </div>
+</div>
+</body></html>`;
+
+    const win = window.open('', '_blank', 'width=960,height=1100,scrollbars=yes');
+    win.document.write(html);
+    win.document.close();
+}
+
+const _slideIdx = {};
+function slideImg(e, id, dir) {
+    e.stopPropagation();
+    const el = document.getElementById(id + '-slides');
+    if (!el) return;
+    const total = el.children.length;
+    const cur   = (_slideIdx[id] || 0);
+    const next  = ((cur + dir) + total) % total;
+    _slideIdx[id] = next;
+    el.style.transform = `translateX(-${next * (100 / total)}%)`;
+    // อัปเดต dots
+    for (let i = 0; i < total; i++) {
+        const dot = document.getElementById(id + '-dot-' + i);
+        if (dot) dot.className = 'w-1.5 h-1.5 rounded-full ' + (i === next ? 'bg-white' : 'bg-white/40');
+    }
+}
+function bookViewing(propertyId) {
+    alert(`📅 นัดชมทรัพย์รหัส ${propertyId}\n\nฟีเจอร์นัดชมจะเปิดใช้งานใน Prototype 2 ครับ\nสำหรับตอนนี้ติดต่อทีมงานผ่าน LINE: @304housingbybemore`);
+}
+
+function showError(msg) {
+    document.getElementById('loading-text').innerHTML =
+        `<p class="text-red-500 text-sm">${msg}</p>`;
+}
+
+// Init
+applyTranslations();
+loadProperties();
+</script>
+</body>
+</html>
