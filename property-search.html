@@ -399,37 +399,44 @@ function renderProperties(data) {
 async function showPropertySheet(propId) {
     const p = rawProperties.find(x => x.id === propId);
     if (!p) return;
-    // Pre-fetch รูปทั้งหมดผ่าน proxy เพื่อให้แสดงใน PDF ได้
     const rawImgs = (p.image_url || "").split(",").map(u => u.trim()).filter(Boolean);
     const imgs = rawImgs.length
         ? await Promise.all(rawImgs.map(u => fetchImageViaProxy(u)))
         : [];
     const cols = imgs.length === 1 ? 1 : imgs.length === 2 ? 2 : 3;
-    const printDate = new Date().toLocaleDateString('th-TH', {year:'numeric',month:'long',day:'numeric'});
 
     const photoHtml = imgs.length
         ? `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;margin:10px 0">
             ${imgs.map(u => `<img src="${u}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px" onerror="this.style.display='none'">`).join('')}
            </div>`
-        : `<div style="height:120px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#ccc;margin:10px 0">ไม่มีรูปภาพ</div>`;
+        : `<div style="height:120px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#ccc;margin:10px 0" data-key="noPhoto">ไม่มีรูปภาพ</div>`;
+
+    // Data สำหรับ JS ใน popup (ต้องหลีกเลี่ยง backtick และ </script>)
+    const pData = JSON.stringify({
+        id: p.id, type: p.type, price: p.price, distance: p.distance,
+        bedrooms: p.bedrooms, bathrooms: p.bathrooms, area: p.area || "",
+        sub_district: p.sub_district || "", district: p.district || "",
+        address: p.address || "", appliances: p.appliances || "",
+        shuttle: p.shuttle, tm30: p.tm30, pets: p.pets
+    });
 
     const html = `<!DOCTYPE html>
 <html lang="th"><head>
 <meta charset="UTF-8">
 <title>ใบนำเสนอ ${p.id}</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=Noto+Sans+SC:wght@400;600;700&family=Noto+Sans+JP:wght@400;600;700&display=swap">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Sarabun',sans-serif;background:#f5f5f5;display:flex;flex-direction:column;align-items:center;padding:20px}
-.sheet{background:white;width:210mm;min-height:297mm;padding:14mm;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+body{font-family:'Sarabun','Noto Sans SC','Noto Sans JP',sans-serif;background:#f5f5f5;display:flex;flex-direction:column;align-items:center;padding:20px}
+.sheet{background:white;width:210mm;min-height:297mm;padding:14mm;box-shadow:0 4px 24px rgba(0,0,0,.12);display:flex;flex-direction:column}
 .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
 .brand{font-size:20px;font-weight:700;color:#14532d;line-height:1.2}
 .brand em{color:#16a34a;font-style:normal}
-.brand small{font-size:10px;font-weight:400;color:#888}
-.code-badge{background:#f0fdf4;border:1px solid #86efac;color:#166534;font-size:11px;font-family:monospace;padding:3px 8px;border-radius:6px}
+.brand small{font-size:10px;font-weight:400;color:#888;display:block}
+.code-badge{background:#f0fdf4;border:1px solid #86efac;color:#166534;font-size:11px;font-family:monospace;padding:3px 8px;border-radius:6px;white-space:nowrap}
 hr.divider{border:none;border-top:2.5px solid #14532d;margin:8px 0}
-.price{font-size:26px;font-weight:700;color:#14532d;margin:8px 0}
-.price small{font-size:13px;font-weight:400;color:#888}
+.price-row{font-size:26px;font-weight:700;color:#14532d;margin:8px 0}
+.price-row small{font-size:13px;font-weight:400;color:#888}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
 .info-item{background:#f9fafb;border-radius:7px;padding:7px 10px}
 .info-label{font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
@@ -439,13 +446,19 @@ hr.divider{border:none;border-top:2.5px solid #14532d;margin:8px 0}
 .tag-blue{background:#dbeafe;color:#1e40af}
 .tag-purple{background:#f3e8ff;color:#6b21a8}
 .tag-amber{background:#fef3c7;color:#92400e}
-.appliances{font-size:11px;color:#6b7280;margin:6px 0;line-height:1.5}
+.appliances-row{font-size:11px;color:#6b7280;margin:6px 0;line-height:1.5}
 .footer{margin-top:auto;padding-top:10px;border-top:1.5px solid #e5e7eb;display:flex;justify-content:space-between;align-items:flex-end}
 .contact{font-size:11px;color:#6b7280;line-height:1.6}
 .contact strong{color:#14532d;font-size:13px}
 .print-date{font-size:9px;color:#d1d5db;text-align:right}
-.no-print{margin-bottom:16px;display:flex;gap:10px;justify-content:center}
-.btn{border:none;padding:10px 24px;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;cursor:pointer;font-weight:600}
+/* ── Language Selector ── */
+.no-print{margin-bottom:12px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.lang-bar{display:flex;gap:6px}
+.lang-btn{border:1.5px solid #d1d5db;background:white;padding:5px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;font-family:inherit}
+.lang-btn:hover{border-color:#14532d;color:#14532d}
+.lang-btn.active{background:#14532d;color:white;border-color:#14532d}
+.action-bar{display:flex;gap:8px}
+.btn{border:none;padding:9px 22px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600;font-family:inherit}
 .btn-primary{background:#14532d;color:white}
 .btn-secondary{background:#f3f4f6;color:#374151}
 @media print{
@@ -456,42 +469,137 @@ hr.divider{border:none;border-top:2.5px solid #14532d;margin:8px 0}
 }
 </style>
 </head><body>
+
 <div class="no-print">
-  <button class="btn btn-primary" onclick="window.print()">🖨️ บันทึก PDF / พิมพ์</button>
-  <button class="btn btn-secondary" onclick="window.close()">✕ ปิด</button>
+  <div class="lang-bar">
+    <button class="lang-btn active" data-lang="th" onclick="applyLang('th')">🇹🇭 ไทย</button>
+    <button class="lang-btn" data-lang="en" onclick="applyLang('en')">🇬🇧 English</button>
+    <button class="lang-btn" data-lang="zh" onclick="applyLang('zh')">🇨🇳 中文</button>
+    <button class="lang-btn" data-lang="ja" onclick="applyLang('ja')">🇯🇵 日本語</button>
+  </div>
+  <div class="action-bar">
+    <button id="btn-print" class="btn btn-primary" onclick="window.print()">🖨️ บันทึก PDF / พิมพ์</button>
+    <button class="btn btn-secondary" onclick="window.close()">✕ ปิด</button>
+  </div>
 </div>
+
 <div class="sheet">
   <div class="header">
-    <div class="brand">304 <em>Housing</em> by Be More<br><small>ใบนำเสนออสังหาริมทรัพย์ให้เช่า</small></div>
+    <div class="brand">304 <em>Housing</em> by Be More<br><small id="subtitle">ใบนำเสนออสังหาริมทรัพย์ให้เช่า</small></div>
     <div class="code-badge">${p.id}</div>
   </div>
   <hr class="divider">
   ${photoHtml}
-  <div class="price">${p.price.toLocaleString()} <small>บาท / เดือน</small></div>
-  <div class="info-grid">
-    <div class="info-item"><div class="info-label">ประเภท</div><div class="info-value">${p.type}</div></div>
-    <div class="info-item"><div class="info-label">ระยะถึงนิคม 304</div><div class="info-value">${p.distance} กิโลเมตร</div></div>
-    <div class="info-item"><div class="info-label">ห้องนอน</div><div class="info-value">${p.bedrooms} ห้อง</div></div>
-    <div class="info-item"><div class="info-label">ห้องน้ำ</div><div class="info-value">${p.bathrooms} ห้อง</div></div>
-    ${p.area ? `<div class="info-item"><div class="info-label">ขนาดพื้นที่</div><div class="info-value">${p.area}</div></div>` : ''}
-    ${(p.sub_district || p.district) ? `<div class="info-item"><div class="info-label">ที่ตั้ง</div><div class="info-value">${p.sub_district ? 'ต.'+p.sub_district+' ' : ''}${p.district ? 'อ.'+p.district : ''}</div></div>` : ''}
-    ${p.address ? `<div class="info-item" style="grid-column:1/-1"><div class="info-label">ที่อยู่</div><div class="info-value" style="font-size:12px;font-weight:400">${p.address}</div></div>` : ''}
-  </div>
-  <div class="tags">
-    ${p.shuttle === 'ผ่าน' ? '<span class="tag tag-blue">🚌 มีรถรับส่งโรงงาน</span>' : ''}
-    ${p.tm30 ? '<span class="tag tag-purple">🌐 รับต่างชาติ + TM30</span>' : ''}
-    ${p.pets ? '<span class="tag tag-amber">🐾 เลี้ยงสัตว์ได้</span>' : ''}
-  </div>
-  ${p.appliances ? `<p class="appliances">🏠 เครื่องใช้ไฟฟ้า: ${p.appliances}</p>` : ''}
+  <div class="price-row">${p.price.toLocaleString()} <small id="currency">บาท / เดือน</small></div>
+  <div class="info-grid" id="info-grid"></div>
+  <div class="tags" id="tags-row"></div>
+  <p class="appliances-row" id="appliances-row" style="${p.appliances ? '' : 'display:none'}"></p>
   <div class="footer">
     <div class="contact">
       <strong>304 Housing by Be More</strong><br>
       LINE Official: @304housingbybemore<br>
-      นิคมอุตสาหกรรม 304 จ.ปราจีนบุรี
+      <span id="estate">นิคมอุตสาหกรรม 304 จ.ปราจีนบุรี</span>
     </div>
-    <div class="print-date">จัดทำวันที่ ${printDate}</div>
+    <div class="print-date"><span id="prepared-label">จัดทำวันที่</span>: <span id="print-date"></span></div>
   </div>
 </div>
+
+<script>
+const P = ${pData};
+const LANG = {
+  th:{
+    subtitle:"ใบนำเสนออสังหาริมทรัพย์ให้เช่า", currency:"บาท / เดือน",
+    type:"ประเภท", distance:"ระยะถึงนิคม 304", bedrooms:"ห้องนอน", bathrooms:"ห้องน้ำ",
+    area:"ขนาดพื้นที่", location:"ที่ตั้ง", address:"ที่อยู่",
+    shuttle:"🚌 มีรถรับส่งโรงงาน", tm30:"🌐 รับต่างชาติ + TM30", pets:"🐾 เลี้ยงสัตว์ได้",
+    appliances:"🏠 เครื่องใช้ไฟฟ้า", prepared:"จัดทำวันที่", km:"กิโลเมตร", rooms:"ห้อง",
+    estate:"นิคมอุตสาหกรรม 304 จ.ปราจีนบุรี", noPhoto:"ไม่มีรูปภาพ",
+    print:"🖨️ บันทึก PDF / พิมพ์", locale:"th-TH"
+  },
+  en:{
+    subtitle:"Rental Property Listing", currency:"THB / Month",
+    type:"Property Type", distance:"Distance to Estate 304", bedrooms:"Bedrooms", bathrooms:"Bathrooms",
+    area:"Area Size", location:"Location", address:"Address",
+    shuttle:"🚌 Factory Shuttle Available", tm30:"🌐 Foreigners Welcome + TM30", pets:"🐾 Pets Allowed",
+    appliances:"🏠 Appliances", prepared:"Prepared on", km:"km", rooms:"room(s)",
+    estate:"304 Industrial Estate, Prachinburi", noPhoto:"No photos available",
+    print:"🖨️ Save PDF / Print", locale:"en-US"
+  },
+  zh:{
+    subtitle:"租赁房产介绍", currency:"泰铢 / 月",
+    type:"房产类型", distance:"距304工业区距离", bedrooms:"卧室", bathrooms:"浴室",
+    area:"面积", location:"位置", address:"地址",
+    shuttle:"🚌 提供厂区班车", tm30:"🌐 欢迎外籍人士 + TM30", pets:"🐾 允许养宠物",
+    appliances:"🏠 电器设备", prepared:"制作日期", km:"公里", rooms:"间",
+    estate:"304工业区，巴真武里府", noPhoto:"暂无图片",
+    print:"🖨️ 保存PDF / 打印", locale:"zh-CN"
+  },
+  ja:{
+    subtitle:"賃貸物件のご案内", currency:"バーツ / 月",
+    type:"物件タイプ", distance:"304工業団地までの距離", bedrooms:"寝室", bathrooms:"バスルーム",
+    area:"面積", location:"所在地", address:"住所",
+    shuttle:"🚌 工場送迎バスあり", tm30:"🌐 外国人歓迎 + TM30", pets:"🐾 ペット可",
+    appliances:"🏠 家電設備", prepared:"作成日", km:"km", rooms:"室",
+    estate:"304工業団地、プラーチンブリー県", noPhoto:"写真なし",
+    print:"🖨️ PDF保存 / 印刷", locale:"ja-JP"
+  }
+};
+
+function applyLang(lang) {
+  const t = LANG[lang];
+  // Subtitle & currency
+  document.getElementById('subtitle').textContent = t.subtitle;
+  document.getElementById('currency').textContent = t.currency;
+  document.getElementById('estate').textContent   = t.estate;
+  document.getElementById('prepared-label').textContent = t.prepared;
+  document.getElementById('btn-print').textContent = t.print;
+  document.getElementById('print-date').textContent =
+    new Date().toLocaleDateString(t.locale, {year:'numeric',month:'long',day:'numeric'});
+
+  // Info grid
+  const grid = document.getElementById('info-grid');
+  let rows = [
+    {label: t.type,     val: P.type},
+    {label: t.distance, val: P.distance + ' ' + t.km},
+    {label: t.bedrooms, val: P.bedrooms + ' ' + t.rooms},
+    {label: t.bathrooms,val: P.bathrooms + ' ' + t.rooms},
+  ];
+  if (P.area)        rows.push({label: t.area,     val: P.area, full: false});
+  if (P.sub_district || P.district)
+    rows.push({label: t.location, val: (P.sub_district ? P.sub_district+' ' : '') + (P.district || ''), full: false});
+  if (P.address)     rows.push({label: t.address,  val: P.address, full: true, small: true});
+  grid.innerHTML = rows.map(r =>
+    '<div class="info-item"' + (r.full ? ' style="grid-column:1/-1"' : '') + '>' +
+    '<div class="info-label">' + r.label + '</div>' +
+    '<div class="info-value"' + (r.small ? ' style="font-size:12px;font-weight:400"' : '') + '>' + r.val + '</div></div>'
+  ).join('');
+
+  // Tags
+  const tags = document.getElementById('tags-row');
+  let tagHtml = '';
+  if (P.shuttle === 'ผ่าน') tagHtml += '<span class="tag tag-blue">'+t.shuttle+'</span>';
+  if (P.tm30)  tagHtml += '<span class="tag tag-purple">'+t.tm30+'</span>';
+  if (P.pets)  tagHtml += '<span class="tag tag-amber">'+t.pets+'</span>';
+  tags.innerHTML = tagHtml;
+
+  // Appliances
+  const appRow = document.getElementById('appliances-row');
+  if (P.appliances) { appRow.textContent = t.appliances + ': ' + P.appliances; appRow.style.display=''; }
+
+  // No photo placeholder
+  const np = document.querySelector('[data-key="noPhoto"]');
+  if (np) np.textContent = t.noPhoto;
+
+  // Lang buttons
+  document.querySelectorAll('.lang-btn').forEach(b =>
+    b.classList.toggle('active', b.getAttribute('data-lang') === lang));
+
+  // HTML lang attribute
+  document.documentElement.lang = {th:'th',en:'en',zh:'zh-CN',ja:'ja'}[lang];
+}
+
+applyLang('th');
+<\/script>
 </body></html>`;
 
     const win = window.open('', '_blank', 'width=960,height=1100,scrollbars=yes');
