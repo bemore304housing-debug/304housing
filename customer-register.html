@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนค้นหาทรัพย์ - 304 Housing by Be More</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+        .theme-bg { background-color: #1e4620; }
+        .theme-text { color: #1e4620; }
+        .theme-border:focus { border-color: #1e4620; ring-color: #1e4620; }
+        /* สวิตช์ Toggle Custom */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #1e4620; }
+        input:checked + .slider:before { transform: translateX(20px); }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col justify-between">
+
+    <!-- Header / Navbar -->
+    <header class="theme-bg text-white py-4 px-6 shadow-md text-center">
+        <h1 class="text-xl font-semibold tracking-wide">304 Housing by Be More</h1>
+        <p class="text-xs opacity-80 mt-1">บริการจัดหาที่พักอาศัย นิคม 304 และพื้นที่ใกล้เคียง</p>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md border border-gray-100">
+            
+            <div class="text-center mb-6">
+                <h2 class="text-lg font-medium text-gray-800">สนใจเช่าอสังหาริมทรัพย์ในประเทศไทย?</h2>
+                <p class="text-sm text-gray-500 mt-1">สอบถามผู้เชี่ยวชาญของเรา!</p>
+            </div>
+
+            <!-- Form Start -->
+            <form id="leadForm" class="space-y-4">
+                
+                <!-- ชื่อ-นามสกุล -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อ - นามสกุล</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-regular fa-user"></i></span>
+                        <input type="text" id="fullName" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="Artit Moungsri">
+                    </div>
+                </div>
+
+                <!-- เบอร์โทรศัพท์ (Required) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">หมายเลขโทรศัพท์ <span class="text-red-500">*</span></label>
+                    <div class="flex space-x-2">
+                        <div class="w-24 flex items-center justify-center border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-600">
+                            <img src="https://flagcdn.com/w20/th.png" alt="TH Flag" class="mr-1 w-4 h-3"> +66
+                        </div>
+                        <input type="tel" id="phoneNumber" required class="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="หมายเลขโทรศัพท์ *">
+                    </div>
+                </div>
+
+                <!-- อีเมล -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">อีเมล</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-regular fa-envelope"></i></span>
+                        <input type="email" id="email" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="artitmuangsri@gmail.com">
+                    </div>
+                </div>
+
+                <!-- WhatsApp / WeChat -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">WhatsApp / WeChat</label>
+                    <div class="flex space-x-2">
+                        <div class="w-24 flex items-center justify-center border border-gray-300 rounded-lg bg-gray-50 text-xs text-gray-500">
+                            โซเชียลต่างชาติ
+                        </div>
+                        <input type="text" id="foreignSocial" class="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="WhatsApp หรือ WeChat ID">
+                    </div>
+                </div>
+
+                <!-- LINE ID -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">LINE ID</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-brands fa-line"></i></span>
+                        <input type="text" id="lineId" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="Line ID">
+                    </div>
+                </div>
+
+                <!-- พื้นที่ที่ต้องการเช่า -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">พื้นที่ที่ต้องการเช่า / ทำเล</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-solid fa-location-dot"></i></span>
+                        <input type="text" id="targetLocation" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="เช่น ใกล้นิคม 304, ท่าตูม, ศรีมหาโพธิ">
+                    </div>
+                </div>
+
+                <!-- ช่วงงบประมาณ (Required) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">กรุณาเลือกช่วงงบประมาณ <span class="text-red-500">*</span></label>
+                    <select id="budgetRange" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620] bg-white text-gray-700">
+                        <option value="" disabled selected>กรุณาเลือกช่วงงบประมาณ *</option>
+                        <option value="ต่ำกว่า 3,000 บาท">ต่ำกว่า 3,000 บาท</option>
+                        <option value="3,000 - 5,000 บาท">3,000 - 5,000 บาท</option>
+                        <option value="5,000 - 10,000 บาท">5,000 - 10,000 บาท</option>
+                        <option value="10,000 - 20,000 บาท">10,000 - 20,000 บาท</option>
+                        <option value="20,000 บาทขึ้นไป">20,000 บาทขึ้นไป</option>
+                    </select>
+                </div>
+
+                <!-- ภาษาที่ต้องการ -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">กรุณาเลือกภาษาที่ต้องการ</label>
+                    <select id="preferredLanguage" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620] bg-white text-gray-700">
+                        <option value="TH" selected>ภาษาไทย (TH)</option>
+                        <option value="EN">English (EN)</option>
+                        <option value="CN">中文 (CN)</option>
+                        <option value="JP">日本語 (JP)</option>
+                    </select>
+                </div>
+
+                <!-- Toggle บันทึกการค้นหา -->
+                <div class="flex items-center justify-between py-2 border-y border-gray-100 my-2">
+                    <span class="text-sm font-medium text-gray-700 flex items-center"><i class="fa-regular fa-lightbulb text-amber-500 mr-2 text-base"></i> สร้างบันทึกการค้นหา</span>
+                    <label class="switch">
+                        <input type="checkbox" id="saveSearchToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- นโยบายความเป็นส่วนตัว & ปุ่มส่ง -->
+                <div class="text-xs text-gray-500 leading-relaxed pt-2">
+                    เมื่อคลิก "ดำเนินการ" ฉันยืนยันว่าฉันได้อ่านและเข้าใจ <a href="#" class="text-amber-600 underline">นโยบายความเป็นส่วนตัว</a> แล้ว และยินยอมให้ Be More Group ติดต่อฉันเพื่อแจ้งข้อมูลอัปเดตเกี่ยวกับทรัพย์สินและข้อมูลที่เกี่ยวข้อง
+                </div>
+
+                <button type="submit" class="w-full theme-bg hover:bg-[#153216] text-white font-medium py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center">
+                    <span>ดำเนินการ</span> <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                </button>
+            </form>
+            <!-- Form End -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 text-center py-3 text-xs text-gray-400 border-t border-gray-200">
+        &copy; 2026 Be More Group. All Rights Reserved.
+    </footer>
+
+    <!-- JavaScript Handling Backend Connection -->
+    <script>
+        // เปลี่ยนเป็น URL ของ Web App Google Apps Script ที่ Deploy แบบ Anyone จริงๆ
+        const BACKEND_API_URL = "https://script.google.com/macros/s/---YOUR-SCRIPT-ID---/exec";
+
+        document.getElementById('leadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> กำลังบันทึกข้อมูล...';
+
+            // รวบรวม Object ข้อมูลส่งเข้า API
+            const payload = {
+                action: "save_customer_lead",
+                fullName: document.getElementById('fullName').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                email: document.getElementById('email').value,
+                foreignSocial: document.getElementById('foreignSocial').value,
+                lineId: document.getElementById('lineId').value,
+                targetLocation: document.getElementById('targetLocation').value,
+                budgetRange: document.getElementById('budgetRange').value,
+                preferredLanguage: document.getElementById('preferredLanguage').value,
+                saveSearch: document.getElementById('saveSearchToggle').checked ? "เปิด" : "ปิด"
+            };
+
+            fetch(BACKEND_API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    alert("บันทึกข้อมูลและส่งเรื่องให้ผู้เชี่ยวชาญเรียบร้อยแล้ว ทีมงานจะติดต่อกลับโดยเร็วที่สุดครับ");
+                    document.getElementById('leadForm').reset();
+                } else {
+                    alert("เกิดข้อผิดพลาดจากระบบ: " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Error:", err);
+                alert("ไม่สามารถติดต่อเซิร์ฟเวอร์ระบบได้ กรุณาลองใหม่อีกครั้ง");
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<span>ดำเนินการ</span> <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>';
+            });
+        });
+    </script>
+</body>
+</html>
