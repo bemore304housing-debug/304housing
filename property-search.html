@@ -377,8 +377,6 @@ function renderProperties(data) {
                     <p>🛏️ ${p.bedrooms} ห้องนอน &nbsp;🚿 ${p.bathrooms} ห้องน้ำ</p>
                     <p><i class="fa-solid fa-location-dot text-red-500 mr-1"></i> ${t.distText} ${p.distance} km</p>
                     ${(p.sub_district || p.district) ? `<p><i class="fa-solid fa-map-pin text-gray-400 mr-1"></i> ${p.sub_district ? 'ต.' + p.sub_district : ''} ${p.district ? 'อ.' + p.district : ''}</p>` : ''}
-                    ${p.shuttle === 'ผ่าน' ? `<p class="text-blue-700 font-medium">${t.shuttle}</p>` : ''}
-                    ${p.tm30  ? `<p class="text-purple-700">${t.tm30}</p>` : ''}
                     ${p.pets  ? `<p class="text-amber-700">${t.pets}</p>` : ''}
                     ${p.appliances ? `<p class="text-gray-400 truncate">🏠 ${p.appliances}</p>` : ''}
                 </div>
@@ -413,6 +411,7 @@ async function showPropertySheet(propId) {
         id: p.id, type: p.type, price: p.price, distance: p.distance,
         project_name: p.project_name || "",
         bedrooms: p.bedrooms, bathrooms: p.bathrooms, area: p.area || "",
+        land_size: p.land_size || "",
         sub_district: p.sub_district || "", district: p.district || "",
         address: p.address || "", appliances: p.appliances || "",
         furniture: p.furniture || "",
@@ -510,7 +509,7 @@ const LANG = {
   th:{
     subtitle:"ใบนำเสนออสังหาริมทรัพย์ให้เช่า", currency:"บาท / เดือน",
     type:"ประเภท", distance:"ระยะถึงนิคม 304", bedrooms:"ห้องนอน", bathrooms:"ห้องน้ำ",
-    area:"ขนาดพื้นที่", location:"ที่ตั้ง", address:"ที่อยู่",
+    area:"ขนาดพื้นที่", landSize:"ขนาดที่ดิน", sqwa:"ตร.ว.", location:"ที่ตั้ง", address:"ที่อยู่",
     shuttle:"🚌 มีรถรับส่งโรงงาน", tm30:"🌐 รับต่างชาติ + TM30", pets:"🐾 เลี้ยงสัตว์ได้",
     appliances:"🏠 เครื่องใช้ไฟฟ้า", furniture:"🪑 เฟอร์นิเจอร์", projectLabel:"โครงการ/หมู่บ้าน",
     prepared:"จัดทำวันที่", km:"กิโลเมตร", rooms:"ห้อง",
@@ -520,7 +519,7 @@ const LANG = {
   en:{
     subtitle:"Rental Property Listing", currency:"THB / Month",
     type:"Property Type", distance:"Distance to Estate 304", bedrooms:"Bedrooms", bathrooms:"Bathrooms",
-    area:"Area Size", location:"Location", address:"Address",
+    area:"Area Size", landSize:"Land Size", sqwa:"Sq. Wah", location:"Location", address:"Address",
     shuttle:"🚌 Factory Shuttle Available", tm30:"🌐 Foreigners Welcome + TM30", pets:"🐾 Pets Allowed",
     appliances:"🏠 Appliances", furniture:"🪑 Furniture", projectLabel:"Project / Village",
     prepared:"Prepared on", km:"km", rooms:"room(s)",
@@ -530,7 +529,7 @@ const LANG = {
   zh:{
     subtitle:"租赁房产介绍", currency:"泰铢 / 月",
     type:"房产类型", distance:"距304工业区距离", bedrooms:"卧室", bathrooms:"浴室",
-    area:"面积", location:"位置", address:"地址",
+    area:"面积", landSize:"土地面积", sqwa:"平方哇", location:"位置", address:"地址",
     shuttle:"🚌 提供厂区班车", tm30:"🌐 欢迎外籍人士 + TM30", pets:"🐾 允许养宠物",
     appliances:"🏠 电器设备", furniture:"🪑 家具", projectLabel:"项目/村庄",
     prepared:"制作日期", km:"公里", rooms:"间",
@@ -540,7 +539,7 @@ const LANG = {
   ja:{
     subtitle:"賃貸物件のご案内", currency:"バーツ / 月",
     type:"物件タイプ", distance:"304工業団地までの距離", bedrooms:"寝室", bathrooms:"バスルーム",
-    area:"面積", location:"所在地", address:"住所",
+    area:"面積", landSize:"土地面積", sqwa:"平方ワー", location:"所在地", address:"住所",
     shuttle:"🚌 工場送迎バスあり", tm30:"🌐 外国人歓迎 + TM30", pets:"🐾 ペット可",
     appliances:"🏠 家電設備", furniture:"🪑 家具", projectLabel:"プロジェクト/村",
     prepared:"作成日", km:"km", rooms:"室",
@@ -641,6 +640,7 @@ async function applyLang(lang) {
   rows.push({label: t.bedrooms, val: P.bedrooms + ' ' + t.rooms});
   rows.push({label: t.bathrooms,val: P.bathrooms + ' ' + t.rooms});
   if (displayArea)   rows.push({label: t.area,     val: displayArea, full: false});
+  if (P.land_size)   rows.push({label: t.landSize, val: P.land_size + ' ' + t.sqwa, full: false});
   if (P.sub_district || P.district)
     rows.push({label: t.location, val: (P.sub_district ? P.sub_district+' ' : '') + (P.district || ''), full: false});
   if (displayAddress) rows.push({label: t.address,  val: displayAddress, full: true, small: true});
