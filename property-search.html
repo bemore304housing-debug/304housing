@@ -569,7 +569,7 @@ function translateItemList(str, lang) {
   const map = ITEM_MAP.en || {}; // appliances/furniture answers are free-typed by the property owner — always show in English, like address/area/project name
   return str.split(',').map(seg => {
     seg = seg.trim();
-    const m = seg.match(/^(.+?)\s+(\d+)\s*\S*$/);
+    const m = seg.match(/^(.+?)\\s+(\\d+)\\s*\\S*$/);
     if (m) {
       const name  = m[1].trim();
       const count = m[2];
