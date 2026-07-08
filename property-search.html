@@ -411,7 +411,7 @@ async function showPropertySheet(propId) {
            </div>`
         : `<div style="height:120px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#ccc;margin:10px 0" data-key="noPhoto">ไม่มีรูปภาพ</div>`;
 
-    // Data สำหรับ JS ใน popup (ต้องหลีกเลี่ยง backtick และ </script>)
+    // Data สำหรับ JS ใน popup (ต้องหลีกเลี่ยง backtick และ script-close-tag)
     const pData = JSON.stringify({
         id: p.id, type: p.type, price: p.price, distance: p.distance,
         bedrooms: p.bedrooms, bathrooms: p.bathrooms, area: p.area || "",
