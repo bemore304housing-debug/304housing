@@ -414,9 +414,11 @@ async function showPropertySheet(propId) {
     // Data สำหรับ JS ใน popup (ต้องหลีกเลี่ยง backtick และ script-close-tag)
     const pData = JSON.stringify({
         id: p.id, type: p.type, price: p.price, distance: p.distance,
+        project_name: p.project_name || "",
         bedrooms: p.bedrooms, bathrooms: p.bathrooms, area: p.area || "",
         sub_district: p.sub_district || "", district: p.district || "",
         address: p.address || "", appliances: p.appliances || "",
+        furniture: p.furniture || "",
         pets: p.pets
     });
 
@@ -494,6 +496,7 @@ hr.divider{border:none;border-top:2.5px solid #14532d;margin:8px 0}
   <div class="info-grid" id="info-grid"></div>
   <div class="tags" id="tags-row"></div>
   <p class="appliances-row" id="appliances-row" style="${p.appliances ? '' : 'display:none'}"></p>
+  <p class="appliances-row" id="furniture-row" style="${p.furniture ? '' : 'display:none'}"></p>
   <div class="footer">
     <div class="contact">
       <strong>304 Housing by Be More</strong><br>
@@ -512,7 +515,8 @@ const LANG = {
     type:"ประเภท", distance:"ระยะถึงนิคม 304", bedrooms:"ห้องนอน", bathrooms:"ห้องน้ำ",
     area:"ขนาดพื้นที่", location:"ที่ตั้ง", address:"ที่อยู่",
     shuttle:"🚌 มีรถรับส่งโรงงาน", tm30:"🌐 รับต่างชาติ + TM30", pets:"🐾 เลี้ยงสัตว์ได้",
-    appliances:"🏠 เครื่องใช้ไฟฟ้า", prepared:"จัดทำวันที่", km:"กิโลเมตร", rooms:"ห้อง",
+    appliances:"🏠 เครื่องใช้ไฟฟ้า", furniture:"🪑 เฟอร์นิเจอร์", projectLabel:"โครงการ/หมู่บ้าน",
+    prepared:"จัดทำวันที่", km:"กิโลเมตร", rooms:"ห้อง",
     estate:"นิคมอุตสาหกรรม 304 จ.ปราจีนบุรี", noPhoto:"ไม่มีรูปภาพ",
     print:"🖨️ บันทึก PDF / พิมพ์", locale:"th-TH"
   },
@@ -521,7 +525,8 @@ const LANG = {
     type:"Property Type", distance:"Distance to Estate 304", bedrooms:"Bedrooms", bathrooms:"Bathrooms",
     area:"Area Size", location:"Location", address:"Address",
     shuttle:"🚌 Factory Shuttle Available", tm30:"🌐 Foreigners Welcome + TM30", pets:"🐾 Pets Allowed",
-    appliances:"🏠 Appliances", prepared:"Prepared on", km:"km", rooms:"room(s)",
+    appliances:"🏠 Appliances", furniture:"🪑 Furniture", projectLabel:"Project / Village",
+    prepared:"Prepared on", km:"km", rooms:"room(s)",
     estate:"304 Industrial Estate, Prachinburi", noPhoto:"No photos available",
     print:"🖨️ Save PDF / Print", locale:"en-US"
   },
@@ -530,7 +535,8 @@ const LANG = {
     type:"房产类型", distance:"距304工业区距离", bedrooms:"卧室", bathrooms:"浴室",
     area:"面积", location:"位置", address:"地址",
     shuttle:"🚌 提供厂区班车", tm30:"🌐 欢迎外籍人士 + TM30", pets:"🐾 允许养宠物",
-    appliances:"🏠 电器设备", prepared:"制作日期", km:"公里", rooms:"间",
+    appliances:"🏠 电器设备", furniture:"🪑 家具", projectLabel:"项目/村庄",
+    prepared:"制作日期", km:"公里", rooms:"间",
     estate:"304工业区，巴真武里府", noPhoto:"暂无图片",
     print:"🖨️ 保存PDF / 打印", locale:"zh-CN"
   },
@@ -539,11 +545,43 @@ const LANG = {
     type:"物件タイプ", distance:"304工業団地までの距離", bedrooms:"寝室", bathrooms:"バスルーム",
     area:"面積", location:"所在地", address:"住所",
     shuttle:"🚌 工場送迎バスあり", tm30:"🌐 外国人歓迎 + TM30", pets:"🐾 ペット可",
-    appliances:"🏠 家電設備", prepared:"作成日", km:"km", rooms:"室",
+    appliances:"🏠 家電設備", furniture:"🪑 家具", projectLabel:"プロジェクト/村",
+    prepared:"作成日", km:"km", rooms:"室",
     estate:"304工業団地、プラーチンブリー県", noPhoto:"写真なし",
     print:"🖨️ PDF保存 / 印刷", locale:"ja-JP"
   }
 };
+
+const TYPE_MAP = {
+  en: {'ทาวน์โฮม':'Townhome','บ้านเดี่ยว':'Detached House','คอนโด':'Condo','หอพัก/อพาร์ทเม้นท์':'Dormitory / Apartment','แมนชั่น':'Mansion'},
+  zh: {'ทาวน์โฮม':'联排别墅','บ้านเดี่ยว':'独栋别墅','คอนโด':'公寓','หอพัก/อพาร์ทเม้นท์':'宿舍/公寓','แมนชั่น':'豪华别墅'},
+  ja: {'ทาวน์โฮม':'タウンハウス','บ้านเดี่ยว':'一戸建て','คอนโด':'コンドミニアム','หอพัก/อพาร์ทเม้นท์':'寮/アパート','แมนชั่น':'マンション'}
+};
+const ITEM_MAP = {
+  en: {'แอร์':'Air Conditioner','ตู้เย็น':'Refrigerator','เครื่องซักผ้า':'Washing Machine','ทีวี':'TV','เครื่องทำน้ำอุ่น':'Water Heater','อินเทอร์เน็ต':'Internet / WiFi','เตียงนอน':'Bed','ตู้เสื้อผ้า':'Wardrobe','โต๊ะเครื่องแป้ง':'Dressing Table','โซฟา':'Sofa','ชั้นวาง TV':'TV Stand'},
+  zh: {'แอร์':'空调','ตู้เย็น':'冰箱','เครื่องซักผ้า':'洗衣机','ทีวี':'电视','เครื่องทำน้ำอุ่น':'热水器','อินเทอร์เน็ต':'网络/WiFi','เตียงนอน':'床','ตู้เสื้อผ้า':'衣柜','โต๊ะเครื่องแป้ง':'梳妆台','โซฟา':'沙发','ชั้นวาง TV':'电视柜'},
+  ja: {'แอร์':'エアコン','ตู้เย็น':'冷蔵庫','เครื่องซักผ้า':'洗濯機','ทีวี':'テレビ','เครื่องทำน้ำอุ่น':'給湯器','อินเทอร์เน็ต':'インターネット/WiFi','เตียงนอน':'ベッド','ตู้เสื้อผ้า':'クローゼット','โต๊ะเครื่องแป้ง':'ドレッサー','โซฟา':'ソファ','ชั้นวาง TV':'テレビ台'}
+};
+
+function translateType(type, lang) {
+  if (lang === 'th' || !type) return type;
+  return (TYPE_MAP[lang] && TYPE_MAP[lang][type]) || type;
+}
+
+function translateItemList(str, lang) {
+  if (lang === 'th' || !str) return str;
+  const map = ITEM_MAP[lang] || {};
+  return str.split(',').map(seg => {
+    seg = seg.trim();
+    const m = seg.match(/^(.+?)\s+(\d+)\s*\S*$/);
+    if (m) {
+      const name  = m[1].trim();
+      const count = m[2];
+      return (map[name] ? map[name] : name) + ' x' + count;
+    }
+    return map[seg] || seg;
+  }).join(', ');
+}
 
 function applyLang(lang) {
   const t = LANG[lang];
@@ -558,12 +596,12 @@ function applyLang(lang) {
 
   // Info grid
   const grid = document.getElementById('info-grid');
-  let rows = [
-    {label: t.type,     val: P.type},
-    {label: t.distance, val: P.distance + ' ' + t.km},
-    {label: t.bedrooms, val: P.bedrooms + ' ' + t.rooms},
-    {label: t.bathrooms,val: P.bathrooms + ' ' + t.rooms},
-  ];
+  let rows = [];
+  if (P.project_name) rows.push({label: t.projectLabel, val: P.project_name, full: true});
+  rows.push({label: t.type,     val: translateType(P.type, lang)});
+  rows.push({label: t.distance, val: P.distance + ' ' + t.km});
+  rows.push({label: t.bedrooms, val: P.bedrooms + ' ' + t.rooms});
+  rows.push({label: t.bathrooms,val: P.bathrooms + ' ' + t.rooms});
   if (P.area)        rows.push({label: t.area,     val: P.area, full: false});
   if (P.sub_district || P.district)
     rows.push({label: t.location, val: (P.sub_district ? P.sub_district+' ' : '') + (P.district || ''), full: false});
@@ -577,14 +615,16 @@ function applyLang(lang) {
   // Tags
   const tags = document.getElementById('tags-row');
   let tagHtml = '';
-  
-  
   if (P.pets)  tagHtml += '<span class="tag tag-amber">'+t.pets+'</span>';
   tags.innerHTML = tagHtml;
 
   // Appliances
   const appRow = document.getElementById('appliances-row');
-  if (P.appliances) { appRow.textContent = t.appliances + ': ' + P.appliances; appRow.style.display=''; }
+  if (P.appliances) { appRow.textContent = t.appliances + ': ' + translateItemList(P.appliances, lang); appRow.style.display=''; }
+
+  // Furniture
+  const furnRow = document.getElementById('furniture-row');
+  if (P.furniture) { furnRow.textContent = t.furniture + ': ' + translateItemList(P.furniture, lang); furnRow.style.display=''; }
 
   // No photo placeholder
   const np = document.querySelector('[data-key="noPhoto"]');
