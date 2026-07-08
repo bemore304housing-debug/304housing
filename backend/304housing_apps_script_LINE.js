@@ -42,6 +42,11 @@ const INTAKE_FORM_URL = "https://bemore304housing-debug.github.io/304housing/int
 // Script จะสร้างโฟลเดอร์นี้ใน Drive ของ account ที่รัน Script อัตโนมัติ
 const DRIVE_FOLDER_NAME = "304Housing-Photos";
 
+// พิกัดอ้างอิง: สวนอุตสาหกรรม 304 (สำนักงานขาย) ต.ท่าตูม อ.ศรีมหาโพธิ จ.ปราจีนบุรี
+// ใช้คำนวณระยะทาง (กม.) จากพิกัด GPS ที่ผู้ฝากทรัพย์ปักหมุดในฟอร์ม
+const REF_LAT = 13.9149096;
+const REF_LNG = 101.5721673;
+
 
 // ─────────────────────────────────────────────────────────────
 //  TEST AUTH (รันครั้งแรกเพื่อ authorize)
@@ -543,36 +548,50 @@ function saveSubmission(data) {
 
   if (sheet.getLastRow() === 0) setupSheets();
 
-  sheet.appendRow([
-    new Date(),
-    "รอคัดกรอง",
-    "",
-    data.property_type          || "",
-    data.project_name           || "",
-    data.address_no             || "",
-    data.moo                    || "",
-    data.sub_district           || "",
-    data.district               || "",
-    data.map_url                || "",
-    data.bedrooms               || 0,
-    data.bathrooms              || 0,
-    data.land_size              || "",
-    data.area_size              || "",
-    data.parking                || "",
-    data.appliances_list        || "ไม่มี",
-    data.furniture_list         || "ไม่มี",
-    data.rent_price             || "",
-    data.accept_foreigner       || "ไม่ระบุ",
-    data.owner_name             || "",
-    data.owner_phone            || "",
-    data.shuttle_bus            || "",
-    data.pets_allowed           || "",
-    data.notes                  || "",
-    data.image_url              || "",
-  ]);
+  // คำนวณระยะทางจากพิกัด GPS (ถ้าฟอร์มส่ง lat/lng มา) เผื่อ client ไม่ได้คำนวณเอง
+  let distanceKm = data.distance_km || "";
+  if (!distanceKm && data.lat && data.lng) {
+    distanceKm = haversineKm(Number(data.lat), Number(data.lng), REF_LAT, REF_LNG).toFixed(1);
+  }
+
+  // เขียนข้อมูลตามชื่อ header จริงของ sheet (ไม่ hardcode ตำแหน่ง คอลัมน์)
+  // ป้องกันข้อมูลเพี้ยนหาก column ของ sheet ถูกเรียงสลับ/เพิ่ม/ลดในอนาคต
+  const fieldMap = {
+    timestamp        : new Date(),
+    status           : "รอคัดกรอง",
+    property_code    : "",
+    property_type    : data.property_type    || "",
+    project_name     : data.project_name     || "",
+    address_no       : data.address_no       || "",
+    moo              : data.moo              || "",
+    sub_district     : data.sub_district     || "",
+    district         : data.district         || "",
+    distance_km      : distanceKm,
+    map_url          : data.map_url          || "",
+    bedrooms         : data.bedrooms         || 0,
+    bathrooms        : data.bathrooms        || 0,
+    land_size        : data.land_size        || "",
+    area_size        : data.area_size        || "",
+    parking          : data.parking          || "",
+    appliances_list  : data.appliances_list  || "ไม่มี",
+    furniture_list   : data.furniture_list   || "ไม่มี",
+    rent_price       : data.rent_price       || "",
+    accept_foreigner : data.accept_foreigner || "ไม่ระบุ",
+    owner_name       : data.owner_name       || "",
+    owner_phone      : data.owner_phone      || "",
+    shuttle_bus      : data.shuttle_bus      || "",
+    pets_allowed     : data.pets_allowed     || "",
+    notes            : data.notes            || "",
+    image_url        : data.image_url        || "",
+  };
+
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const row = headers.map(h => fieldMap.hasOwnProperty(h) ? fieldMap[h] : "");
+  sheet.appendRow(row);
 
   const lastRow = sheet.getLastRow();
-  sheet.getRange(lastRow, 2).setBackground("#FEF3C7");
+  const statusCol = headers.indexOf("status") + 1;
+  if (statusCol > 0) sheet.getRange(lastRow, statusCol).setBackground("#FEF3C7");
 
   // แจ้ง Admin LINE Group
   notifyAdminNewSubmission(data, lastRow);
@@ -591,39 +610,49 @@ function approveSubmission(rowNumber, propertyCode) {
     const subSheet = ss.getSheetByName("submissions");
     const propSheet = getOrCreateSheet(ss, "properties");
 
-    const subHeaders = subSheet.getRange(1, 1, 1, 25).getValues()[0];
-    const rowData    = subSheet.getRange(rowNumber, 1, 1, 25).getValues()[0];
+    const subHeaders = subSheet.getRange(1, 1, 1, subSheet.getLastColumn()).getValues()[0];
+    const rowData    = subSheet.getRange(rowNumber, 1, 1, subSheet.getLastColumn()).getValues()[0];
     const obj = {};
     subHeaders.forEach((h, i) => { obj[h] = rowData[i]; });
 
     const code = propertyCode || ("RT-" + Utilities.formatDate(new Date(), "Asia/Bangkok", "yyMMdd") + "-" + String(propSheet.getLastRow()).padStart(3, "0"));
 
-    propSheet.appendRow([
-      code,
-      obj["property_type"]    || "",
-      "เผยแพร่",
-      obj["rent_price"]       || "",
-      obj["project_name"]     || "",
-      obj["map_url"]          || "",
-      obj["shuttle_bus"]      || "",
-      obj["accept_foreigner"] || "",
-      obj["pets_allowed"]     || "",
-      obj["bedrooms"]         || 0,
-      obj["bathrooms"]        || 0,
-      obj["land_size"]        || "",
-      obj["area_size"]        || "",
-      [obj["address_no"], obj["moo"] ? "ม."+obj["moo"] : "", "ต."+obj["sub_district"], "อ."+obj["district"]].filter(Boolean).join(" "),
-      obj["appliances_list"]  || "",
-      obj["furniture_list"]   || "",
-      (obj["image_url"] || "").trim(),
-      obj["owner_name"]       || "",
-      obj["sub_district"]     || "",
-      obj["district"]         || "",
-    ]);
+    // เขียนข้อมูลตามชื่อ header จริงของ sheet (ไม่ hardcode ตำแหน่งคอลัมน์)
+    const propFieldMap = {
+      property_code    : code,
+      property_type    : obj["property_type"]    || "",
+      status           : "เผยแพร่",
+      rent_price       : obj["rent_price"]        || "",
+      distance_km      : obj["distance_km"]       || "",
+      project_name     : obj["project_name"]      || "",
+      map_url          : obj["map_url"]           || "",
+      shuttle_bus      : obj["shuttle_bus"]        || "",
+      accept_foreigner : obj["accept_foreigner"]   || "",
+      pets_allowed     : obj["pets_allowed"]       || "",
+      bedrooms         : obj["bedrooms"]           || 0,
+      bathrooms        : obj["bathrooms"]          || 0,
+      land_size        : obj["land_size"]          || "",
+      area_size        : obj["area_size"]          || "",
+      address_display  : [obj["address_no"], obj["moo"] ? "ม."+obj["moo"] : "", obj["sub_district"] ? "ต."+obj["sub_district"] : "", obj["district"] ? "อ."+obj["district"] : ""].filter(Boolean).join(" "),
+      appliances_list  : obj["appliances_list"]    || "",
+      furniture_list   : obj["furniture_list"]     || "",
+      image_url        : (obj["image_url"] || "").trim(),
+      owner_name       : obj["owner_name"]         || "",
+      sub_district     : obj["sub_district"]       || "",
+      district         : obj["district"]           || "",
+    };
 
-    propSheet.getRange(propSheet.getLastRow(), 3).setBackground("#D5F5E3");
-    subSheet.getRange(rowNumber, 2).setValue("อนุมัติแล้ว").setBackground("#D5F5E3");
-    subSheet.getRange(rowNumber, 3).setValue(code);
+    const propHeaders = propSheet.getRange(1, 1, 1, propSheet.getLastColumn()).getValues()[0];
+    const row = propHeaders.map(h => propFieldMap.hasOwnProperty(h) ? propFieldMap[h] : "");
+    propSheet.appendRow(row);
+
+    const propStatusCol = propHeaders.indexOf("status") + 1;
+    if (propStatusCol > 0) propSheet.getRange(propSheet.getLastRow(), propStatusCol).setBackground("#D5F5E3");
+
+    const subStatusCol = subHeaders.indexOf("status") + 1;
+    const subCodeCol   = subHeaders.indexOf("property_code") + 1;
+    if (subStatusCol > 0) subSheet.getRange(rowNumber, subStatusCol).setValue("อนุมัติแล้ว").setBackground("#D5F5E3");
+    if (subCodeCol > 0)   subSheet.getRange(rowNumber, subCodeCol).setValue(code);
 
     return jsonResponse({ status: "success", message: "อนุมัติสำเร็จ", property_code: code });
 
@@ -636,8 +665,11 @@ function rejectSubmission(rowNumber, reason) {
   try {
     const ss      = SpreadsheetApp.openById(SHEET_ID);
     const subSheet = ss.getSheetByName("submissions");
-    subSheet.getRange(rowNumber, 2).setValue("ปฏิเสธ").setBackground("#FADBD8");
-    if (reason) subSheet.getRange(rowNumber, 21).setValue(reason);
+    const headers  = subSheet.getRange(1, 1, 1, subSheet.getLastColumn()).getValues()[0];
+    const statusCol = headers.indexOf("status") + 1;
+    const notesCol  = headers.indexOf("notes") + 1;
+    if (statusCol > 0) subSheet.getRange(rowNumber, statusCol).setValue("ปฏิเสธ").setBackground("#FADBD8");
+    if (reason && notesCol > 0) subSheet.getRange(rowNumber, notesCol).setValue(reason);
     return jsonResponse({ status: "success", message: "ปฏิเสธเรียบร้อย" });
   } catch (err) {
     return jsonResponse({ status: "error", message: err.toString() });
@@ -665,8 +697,8 @@ function getProperties() {
     const sheet = ss.getSheetByName("properties");
     if (!sheet || sheet.getLastRow() < 2) return jsonResponse({ status: "success", properties: [] });
 
-    const headers = sheet.getRange(1, 1, 1, 20).getValues()[0];
-    const rows    = sheet.getRange(2, 1, sheet.getLastRow() - 1, 20).getValues();
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const rows    = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
 
     const properties = rows
       .filter(r => r[0] !== "" && String(r[2]) === "เผยแพร่")
@@ -677,6 +709,7 @@ function getProperties() {
           id           : obj["property_code"]    || "",
           type         : obj["property_type"]    || "",
           price        : Number(obj["rent_price"])   || 0,
+          distance     : Number(obj["distance_km"])  || 0,
           project_name : obj["project_name"]     || "",
           map_url      : obj["map_url"]          || "",
           shuttle      : obj["shuttle_bus"]      || "",
@@ -753,8 +786,8 @@ function getSubmissions() {
     const sheet = ss.getSheetByName("submissions");
     if (!sheet || sheet.getLastRow() < 2) return jsonResponse({ status: "success", submissions: [] });
 
-    const headers = sheet.getRange(1, 1, 1, 25).getValues()[0];
-    const rows    = sheet.getRange(2, 1, sheet.getLastRow() - 1, 25).getValues();
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const rows    = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
     const submissions = rows
       .map((r, idx) => {
         const obj = {};
@@ -800,11 +833,11 @@ function uploadImage(data) {
 function setupSheets() {
   const ss = SpreadsheetApp.openById(SHEET_ID);
 
-  const subHeaders = ["timestamp","status","property_code","property_type","project_name","address_no","moo","sub_district","district","map_url","bedrooms","bathrooms","land_size","area_size","parking","appliances_list","furniture_list","rent_price","accept_foreigner","owner_name","owner_phone","shuttle_bus","pets_allowed","notes","image_url"];
+  const subHeaders = ["timestamp","status","property_code","property_type","project_name","address_no","moo","sub_district","district","distance_km","map_url","bedrooms","bathrooms","land_size","area_size","parking","appliances_list","furniture_list","rent_price","accept_foreigner","owner_name","owner_phone","shuttle_bus","pets_allowed","notes","image_url"];
   const subSheet = getOrCreateSheet(ss, "submissions");
   subSheet.getRange(1, 1, 1, subHeaders.length).setValues([subHeaders]).setFontWeight("bold").setBackground("#1e4620").setFontColor("#ffffff");
 
-  const propHeaders = ["property_code","property_type","status","rent_price","project_name","map_url","shuttle_bus","accept_foreigner","pets_allowed","bedrooms","bathrooms","land_size","area_size","address_display","appliances_list","furniture_list","image_url","owner_name","sub_district","district"];
+  const propHeaders = ["property_code","property_type","status","rent_price","distance_km","project_name","map_url","shuttle_bus","accept_foreigner","pets_allowed","bedrooms","bathrooms","land_size","area_size","address_display","appliances_list","furniture_list","image_url","owner_name","sub_district","district"];
   const propSheet = getOrCreateSheet(ss, "properties");
   propSheet.getRange(1, 1, 1, propHeaders.length).setValues([propHeaders]).setFontWeight("bold").setBackground("#1a5276").setFontColor("#ffffff");
 
@@ -824,6 +857,79 @@ function getOrCreateSheet(ss, name) {
   return ss.getSheetByName(name) || ss.insertSheet(name);
 }
 
+
+// ═════════════════════════════════════════════════════════════
+//  ONE-TIME MIGRATION (2026-07-08) — รันครั้งเดียวจาก Editor → Run
+//  แก้ปัญหา column เพี้ยน: ล้างข้อมูลทดสอบเก่า, ตั้ง header ใหม่
+//  (คืน distance_km + เพิ่ม project_name/map_url/ฯลฯ), กู้แถวทดสอบ
+//  ล่าสุด RT-260708-004 กลับมาให้ตรง column
+//  ⚠️ ห้ามรันซ้ำหลัง migrate สำเร็จแล้ว — จะหา RT-260708-004 ไม่เจอ
+// ═════════════════════════════════════════════════════════════
+function migrateSchemaAndData() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+
+  // ── 1. อ่านแถว submissions เดิม (เขียนด้วยลำดับคอลัมน์ก่อนแก้บั๊ก) ──
+  const OLD_SUB_ORDER = ["timestamp","status","property_code","property_type","project_name","address_no","moo","sub_district","district","map_url","bedrooms","bathrooms","land_size","area_size","parking","appliances_list","furniture_list","rent_price","accept_foreigner","owner_name","owner_phone","shuttle_bus","pets_allowed","notes","image_url"];
+  const subSheetOld = ss.getSheetByName("submissions");
+  const subLastRow  = subSheetOld.getLastRow();
+  let savedSubmission = null;
+  for (let r = 2; r <= subLastRow; r++) {
+    const rowVals = subSheetOld.getRange(r, 1, 1, OLD_SUB_ORDER.length).getValues()[0];
+    const obj = {};
+    OLD_SUB_ORDER.forEach((h, i) => { obj[h] = rowVals[i]; });
+    if (obj.property_code === "RT-260708-004") { savedSubmission = obj; break; }
+  }
+
+  // ── 2. ล้าง submissions และตั้ง header ชุดใหม่ ──────────────
+  const subHeaders = ["timestamp","status","property_code","property_type","project_name","address_no","moo","sub_district","district","distance_km","map_url","bedrooms","bathrooms","land_size","area_size","parking","appliances_list","furniture_list","rent_price","accept_foreigner","owner_name","owner_phone","shuttle_bus","pets_allowed","notes","image_url"];
+  subSheetOld.clear();
+  subSheetOld.getRange(1, 1, 1, subHeaders.length).setValues([subHeaders]).setFontWeight("bold").setBackground("#1e4620").setFontColor("#ffffff");
+
+  if (savedSubmission) {
+    const row = subHeaders.map(h => savedSubmission.hasOwnProperty(h) ? savedSubmission[h] : "");
+    subSheetOld.appendRow(row);
+    subSheetOld.getRange(subSheetOld.getLastRow(), subHeaders.indexOf("status") + 1).setBackground("#D5F5E3");
+  }
+
+  // ── 3. ล้าง properties และตั้ง header ชุดใหม่ ──────────────
+  const propHeaders = ["property_code","property_type","status","rent_price","distance_km","project_name","map_url","shuttle_bus","accept_foreigner","pets_allowed","bedrooms","bathrooms","land_size","area_size","address_display","appliances_list","furniture_list","image_url","owner_name","sub_district","district"];
+  const propSheet = ss.getSheetByName("properties");
+  propSheet.clear();
+  propSheet.getRange(1, 1, 1, propHeaders.length).setValues([propHeaders]).setFontWeight("bold").setBackground("#1a5276").setFontColor("#ffffff");
+
+  // ── 4. สร้างแถว properties ใหม่จากข้อมูล submission ที่กู้มา (แทนแถวเดิมที่เพี้ยน) ──
+  if (savedSubmission) {
+    const propFieldMap = {
+      property_code    : savedSubmission.property_code,
+      property_type    : savedSubmission.property_type    || "",
+      status           : "เผยแพร่",
+      rent_price       : savedSubmission.rent_price        || "",
+      distance_km      : "",
+      project_name     : savedSubmission.project_name      || "",
+      map_url          : savedSubmission.map_url           || "",
+      shuttle_bus      : savedSubmission.shuttle_bus        || "",
+      accept_foreigner : savedSubmission.accept_foreigner   || "",
+      pets_allowed     : savedSubmission.pets_allowed       || "",
+      bedrooms         : savedSubmission.bedrooms           || 0,
+      bathrooms        : savedSubmission.bathrooms          || 0,
+      land_size        : savedSubmission.land_size          || "",
+      area_size        : savedSubmission.area_size          || "",
+      address_display  : [savedSubmission.address_no, savedSubmission.moo ? "ม." + savedSubmission.moo : "", savedSubmission.sub_district ? "ต." + savedSubmission.sub_district : "", savedSubmission.district ? "อ." + savedSubmission.district : ""].filter(Boolean).join(" "),
+      appliances_list  : savedSubmission.appliances_list    || "",
+      furniture_list   : savedSubmission.furniture_list     || "",
+      image_url        : (savedSubmission.image_url || "").toString().trim(),
+      owner_name       : savedSubmission.owner_name         || "",
+      sub_district     : savedSubmission.sub_district       || "",
+      district         : savedSubmission.district           || "",
+    };
+    const row2 = propHeaders.map(h => propFieldMap.hasOwnProperty(h) ? propFieldMap[h] : "");
+    propSheet.appendRow(row2);
+    propSheet.getRange(propSheet.getLastRow(), propHeaders.indexOf("status") + 1).setBackground("#D5F5E3");
+  }
+
+  Logger.log("✅ Migration เสร็จสมบูรณ์ — กู้ข้อมูลคืน: " + (savedSubmission ? savedSubmission.property_code : "ไม่พบแถวที่ต้องกู้"));
+}
+
 function getOrCreateDriveFolder(name) {
   const folders = DriveApp.getFoldersByName(name);
   return folders.hasNext() ? folders.next() : DriveApp.createFolder(name);
@@ -835,6 +941,18 @@ function jsonResponse(obj) {
 
 function matchKeyword(text, keywords) {
   return keywords.some(k => text.includes(k.toLowerCase()));
+}
+
+// คำนวณระยะทางเส้นตรงระหว่าง 2 พิกัด (กม.) ด้วยสูตร Haversine
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371; // รัศมีโลก (กม.)
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 // แปลง Drive URL ทุก format → thumbnail format ที่แสดงใน browser ได้
