@@ -56,8 +56,13 @@
     <!-- 2. ที่อยู่ -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3">
         <label class="block text-gray-700 font-medium text-sm flex items-center gap-2">
-            📍 ที่อยู่ + ระยะถึงนิคม 304
+            📍 ที่อยู่และที่ตั้ง
         </label>
+        <div>
+            <label class="block text-gray-500 text-xs mb-1 font-medium">ชื่อโครงการ / หมู่บ้าน (ถ้ามี)</label>
+            <input type="text" id="project_name" placeholder="เช่น หมู่บ้านกรีนวิลล์, คอนโด The Base"
+                class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+        </div>
         <div class="grid grid-cols-2 gap-2">
             <input type="text" id="address_no" placeholder="บ้านเลขที่ *"
                 class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
@@ -71,9 +76,10 @@
                 class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
         </div>
         <div>
-            <label class="block text-gray-500 text-xs mb-1 font-medium">ระยะทางถึงนิคม 304 (กม.) *</label>
-            <input type="number" id="distance_to_industrial" step="0.1" placeholder="เช่น 1.5"
+            <label class="block text-gray-500 text-xs mb-1 font-medium">📌 ลิงก์ Google Maps ของทรัพย์ *</label>
+            <input type="url" id="map_url" placeholder="วาง URL จาก Google Maps เช่น https://maps.app.goo.gl/..."
                 class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+            <p class="text-xs text-gray-400 mt-1">เปิด Google Maps → กด Share → Copy Link แล้ววางที่นี่</p>
         </div>
         <div class="grid grid-cols-2 gap-2">
             <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
@@ -104,12 +110,19 @@
                     class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
             </div>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-4 mb-3">
             <div>
-                <label class="block text-gray-500 text-xs mb-1">พื้นที่ (ตร.ม.)</label>
+                <label class="block text-gray-500 text-xs mb-1">ขนาดที่ดิน (ตร.ว.)</label>
+                <input type="number" id="land_size" placeholder="เช่น 50"
+                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+            </div>
+            <div>
+                <label class="block text-gray-500 text-xs mb-1">พื้นที่ใช้สอย (ตร.ม.)</label>
                 <input type="number" id="area_size" placeholder="เช่น 30"
                     class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
             </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-gray-500 text-xs mb-1">ที่จอดรถ</label>
                 <input type="text" id="parking" placeholder="เช่น ยนต์ 1"
@@ -169,7 +182,51 @@
         </div>
     </div>
 
-    <!-- 5. ค่าเช่า -->
+    <!-- 4.5 เฟอร์นิเจอร์ -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <label class="block text-gray-700 font-medium mb-3 text-sm flex items-center gap-2">
+            🪑 เฟอร์นิเจอร์ (เลือก + ระบุจำนวน)
+        </label>
+        <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" id="furn_bed" class="rounded border-gray-300 text-green-600">
+                    <span>🛏️ เตียงนอน</span>
+                </label>
+                <input type="number" id="fqty_bed" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
+            </div>
+            <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" id="furn_wardrobe" class="rounded border-gray-300 text-green-600">
+                    <span>🚪 ตู้เสื้อผ้า</span>
+                </label>
+                <input type="number" id="fqty_wardrobe" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
+            </div>
+            <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" id="furn_dressing" class="rounded border-gray-300 text-green-600">
+                    <span>💄 โต๊ะเครื่องแป้ง</span>
+                </label>
+                <input type="number" id="fqty_dressing" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
+            </div>
+            <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" id="furn_sofa" class="rounded border-gray-300 text-green-600">
+                    <span>🛋️ โซฟา</span>
+                </label>
+                <input type="number" id="fqty_sofa" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
+            </div>
+            <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" id="furn_tvstand" class="rounded border-gray-300 text-green-600">
+                    <span>📺 ชั้นวาง TV</span>
+                </label>
+                <input type="number" id="fqty_tvstand" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
+            </div>
+        </div>
+    </div>
+
+        <!-- 5. ค่าเช่า -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3">
         <label class="block text-gray-700 font-medium text-sm flex items-center gap-2">
             💸 ค่าเช่าและเงื่อนไข
@@ -373,7 +430,7 @@ async function validateAndSubmit() {
         { id: 'address_no',           label: 'บ้านเลขที่' },
         { id: 'sub_district',         label: 'ตำบล' },
         { id: 'district',             label: 'อำเภอ' },
-        { id: 'distance_to_industrial', label: 'ระยะทางถึงนิคม 304' },
+        { id: 'map_url',               label: 'ลิงก์ Google Maps' },
         { id: 'rent_price',           label: 'ค่าเช่า' },
         { id: 'owner_name',           label: 'ชื่อเจ้าของ' },
         { id: 'owner_phone',          label: 'เบอร์โทรศัพท์' },
@@ -401,6 +458,14 @@ async function validateAndSubmit() {
     if (document.getElementById('item_water_heater').checked) appliances.push(`เครื่องทำน้ำอุ่น ${document.getElementById('qty_water_heater').value} เครื่อง`);
     if (document.getElementById('item_wifi').checked)         appliances.push('WiFi');
 
+    // build furniture list
+    const furniture = [];
+    if (document.getElementById('furn_bed').checked)      furniture.push(`เตียงนอน ${document.getElementById('fqty_bed').value} หลัง`);
+    if (document.getElementById('furn_wardrobe').checked) furniture.push(`ตู้เสื้อผ้า ${document.getElementById('fqty_wardrobe').value} ใบ`);
+    if (document.getElementById('furn_dressing').checked) furniture.push(`โต๊ะเครื่องแป้ง ${document.getElementById('fqty_dressing').value} ตัว`);
+    if (document.getElementById('furn_sofa').checked)     furniture.push(`โซฟา ${document.getElementById('fqty_sofa').value} ตัว`);
+    if (document.getElementById('furn_tvstand').checked)  furniture.push(`ชั้นวาง TV ${document.getElementById('fqty_tvstand').value} ชิ้น`);
+
     const imageUrls = PHOTO_SLOTS
         .map(id => document.getElementById('url-' + id).value)
         .filter(Boolean)
@@ -417,12 +482,15 @@ async function validateAndSubmit() {
         fd.append('moo',                    document.getElementById('moo').value);
         fd.append('sub_district',           document.getElementById('sub_district').value);
         fd.append('district',               document.getElementById('district').value);
-        fd.append('distance_to_industrial', document.getElementById('distance_to_industrial').value);
+        fd.append('project_name',           document.getElementById('project_name').value);
+        fd.append('map_url',                 document.getElementById('map_url').value);
+        fd.append('land_size',               document.getElementById('land_size').value);
         fd.append('bedrooms',               document.getElementById('bedrooms').value);
         fd.append('bathrooms',              document.getElementById('bathrooms').value);
         fd.append('area_size',              document.getElementById('area_size').value);
         fd.append('parking',                document.getElementById('parking').value);
         fd.append('appliances_list',        appliances.length ? appliances.join(', ') : 'ไม่มี');
+        fd.append('furniture_list',          furniture.length ? furniture.join(', ') : 'ไม่มี');
         fd.append('rent_price',             document.getElementById('rent_price').value);
         fd.append('accept_foreigner',       document.getElementById('accept_foreigner').checked ? 'ยินยอม' : 'ไม่ระบุ');
         fd.append('shuttle_bus',            document.getElementById('shuttle_bus').checked ? 'ผ่าน' : '');
@@ -452,13 +520,13 @@ function resetForm() {
     document.getElementById('successModal').classList.add('hidden');
     // reset all inputs
     ['property_type','address_no','moo','sub_district','district',
-     'distance_to_industrial','bedrooms','bathrooms','area_size','parking',
+     'project_name','map_url','land_size','bedrooms','bathrooms','area_size','parking',
      'rent_price','notes','owner_name','owner_phone'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = id === 'bedrooms' || id === 'bathrooms' ? '1' : '';
     });
     ['accept_foreigner'].forEach(id => { document.getElementById(id).checked = true; });
-    ['shuttle_bus','pets_allowed','item_air','item_fridge','item_washing','item_tv','item_water_heater','item_wifi'].forEach(id => {
+    ['shuttle_bus','pets_allowed','item_air','item_fridge','item_washing','item_tv','item_water_heater','item_wifi','furn_bed','furn_wardrobe','furn_dressing','furn_sofa','furn_tvstand'].forEach(id => {
         document.getElementById(id).checked = false;
     });
     // reset photo slots
