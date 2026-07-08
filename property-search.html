@@ -566,7 +566,7 @@ function translateType(type, lang) {
 
 function translateItemList(str, lang) {
   if (lang === 'th' || !str) return str;
-  const map = ITEM_MAP[lang] || {};
+  const map = ITEM_MAP.en || {}; // appliances/furniture answers are free-typed by the property owner — always show in English, like address/area/project name
   return str.split(',').map(seg => {
     seg = seg.trim();
     const m = seg.match(/^(.+?)\s+(\d+)\s*\S*$/);
