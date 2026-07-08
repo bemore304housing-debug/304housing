@@ -365,6 +365,7 @@ function renderProperties(data) {
                     <span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full">${p.type}</span>
                     <span class="text-xs font-mono text-gray-400">${p.id}</span>
                 </div>
+                ${p.project_name ? `<p class="text-sm font-semibold text-gray-700 truncate">🏘️ ${p.project_name}</p>` : ''}
                 <div>
                     <p class="text-xs text-gray-400">${t.rent}</p>
                     <p class="text-xl font-extrabold text-green-800">
@@ -382,13 +383,9 @@ function renderProperties(data) {
                     ${p.appliances ? `<p class="text-gray-400 truncate">🏠 ${p.appliances}</p>` : ''}
                 </div>
                 <div class="flex gap-2 mt-1">
-                    <button onclick="bookViewing('${p.id}')"
-                        class="flex-1 bg-theme-green text-white text-xs font-bold py-2.5 rounded-xl hover:opacity-90 transition">
-                        ${t.btnView}
-                    </button>
                     <button onclick="showPropertySheet('${p.id}')"
-                        class="px-3 bg-gray-100 text-gray-600 text-xs font-bold py-2.5 rounded-xl hover:bg-gray-200 transition" title="ใบนำเสนอ PDF">
-                        📄
+                        class="flex-1 bg-theme-green text-white text-xs font-bold py-2.5 rounded-xl hover:opacity-90 transition">
+                        📄 ใบนำเสนอ PDF
                     </button>
                 </div>
             </div>`;
@@ -583,29 +580,70 @@ function translateItemList(str, lang) {
   }).join(', ');
 }
 
-function applyLang(lang) {
+const translationCache = {};
+async function translateFreeText(text) {
+  if (!text) return text;
+  if (translationCache[text]) return translationCache[text];
+  try {
+    const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + encodeURIComponent('th|en');
+    const res = await fetch(url);
+    const json = await res.json();
+    const translated = (json.responseData && json.responseData.translatedText) ? json.responseData.translatedText : text;
+    translationCache[text] = translated;
+    return translated;
+  } catch {
+    return text;
+  }
+}
+
+let langCallToken = 0;
+async function applyLang(lang) {
+  const myToken = ++langCallToken;
   const t = LANG[lang];
   // Subtitle & currency
   document.getElementById('subtitle').textContent = t.subtitle;
   document.getElementById('currency').textContent = t.currency;
   document.getElementById('estate').textContent   = t.estate;
   document.getElementById('prepared-label').textContent = t.prepared;
-  document.getElementById('btn-print').textContent = t.print;
   document.getElementById('print-date').textContent =
     new Date().toLocaleDateString(t.locale, {year:'numeric',month:'long',day:'numeric'});
+
+  // Translate free-text answers (address / area / project name) to English
+  // whenever a non-Thai language is selected. Headers/labels stay in the selected language.
+  const printBtn = document.getElementById('btn-print');
+  const needsTranslation = lang !== 'th' && (P.address || P.area || P.project_name);
+  const translatingLabel = {en:'⏳ Translating...', zh:'⏳ 翻译中...', ja:'⏳ 翻訳中...'}[lang] || t.print;
+  if (needsTranslation) { printBtn.disabled = true; printBtn.textContent = translatingLabel; }
+
+  let displayAddress = P.address, displayArea = P.area, displayProjectName = P.project_name;
+  if (lang !== 'th') {
+    const [tAddr, tArea, tProj] = await Promise.all([
+      translateFreeText(P.address),
+      translateFreeText(P.area),
+      translateFreeText(P.project_name)
+    ]);
+    displayAddress = tAddr;
+    displayArea = tArea;
+    displayProjectName = tProj;
+  }
+
+  if (myToken !== langCallToken) return; // a newer language switch happened meanwhile — discard stale result
+
+  printBtn.disabled = false;
+  printBtn.textContent = t.print;
 
   // Info grid
   const grid = document.getElementById('info-grid');
   let rows = [];
-  if (P.project_name) rows.push({label: t.projectLabel, val: P.project_name, full: true});
+  if (displayProjectName) rows.push({label: t.projectLabel, val: displayProjectName, full: true});
   rows.push({label: t.type,     val: translateType(P.type, lang)});
   rows.push({label: t.distance, val: P.distance + ' ' + t.km});
   rows.push({label: t.bedrooms, val: P.bedrooms + ' ' + t.rooms});
   rows.push({label: t.bathrooms,val: P.bathrooms + ' ' + t.rooms});
-  if (P.area)        rows.push({label: t.area,     val: P.area, full: false});
+  if (displayArea)   rows.push({label: t.area,     val: displayArea, full: false});
   if (P.sub_district || P.district)
     rows.push({label: t.location, val: (P.sub_district ? P.sub_district+' ' : '') + (P.district || ''), full: false});
-  if (P.address)     rows.push({label: t.address,  val: P.address, full: true, small: true});
+  if (displayAddress) rows.push({label: t.address,  val: displayAddress, full: true, small: true});
   grid.innerHTML = rows.map(r =>
     '<div class="info-item"' + (r.full ? ' style="grid-column:1/-1"' : '') + '>' +
     '<div class="info-label">' + r.label + '</div>' +
@@ -663,10 +701,6 @@ function slideImg(e, id, dir) {
         if (dot) dot.className = 'w-1.5 h-1.5 rounded-full ' + (i === next ? 'bg-white' : 'bg-white/40');
     }
 }
-function bookViewing(propertyId) {
-    alert(`📅 นัดชมทรัพย์รหัส ${propertyId}\n\nฟีเจอร์นัดชมจะเปิดใช้งานใน Prototype 2 ครับ\nสำหรับตอนนี้ติดต่อทีมงานผ่าน LINE: @304housingbybemore`);
-}
-
 function showError(msg) {
     document.getElementById('loading-text').innerHTML =
         `<p class="text-red-500 text-sm">${msg}</p>`;
