@@ -417,7 +417,7 @@ async function showPropertySheet(propId) {
         bedrooms: p.bedrooms, bathrooms: p.bathrooms, area: p.area || "",
         sub_district: p.sub_district || "", district: p.district || "",
         address: p.address || "", appliances: p.appliances || "",
-        shuttle: p.shuttle, tm30: p.tm30, pets: p.pets
+        pets: p.pets
     });
 
     const html = `<!DOCTYPE html>
@@ -577,8 +577,8 @@ function applyLang(lang) {
   // Tags
   const tags = document.getElementById('tags-row');
   let tagHtml = '';
-  if (P.shuttle === 'ผ่าน') tagHtml += '<span class="tag tag-blue">'+t.shuttle+'</span>';
-  if (P.tm30)  tagHtml += '<span class="tag tag-purple">'+t.tm30+'</span>';
+  
+  
   if (P.pets)  tagHtml += '<span class="tag tag-amber">'+t.pets+'</span>';
   tags.innerHTML = tagHtml;
 
