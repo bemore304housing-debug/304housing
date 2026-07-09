@@ -190,6 +190,7 @@ function doGet(e) {
 function handleLineEvents(events) {
   events.forEach(event => {
     try {
+      Logger.log("EVENT_SOURCE_DEBUG: " + JSON.stringify(event.source));
       switch (event.type) {
         case "follow":    handleFollow(event);   break;
         case "unfollow":  handleUnfollow(event); break;
@@ -205,56 +206,9 @@ function handleLineEvents(events) {
 // ── Follow: ส่งข้อความต้อนรับ ──────────────────────────────
 function handleFollow(event) {
   const userId = event.source && event.source.userId;
-  pushLine(userId, [
-    {
-      type: "flex",
-      altText: "ยินดีต้อนรับสู่ 304 Housing by Be More! 🏠",
-      contents: {
-        type: "bubble",
-        header: {
-          type: "box", layout: "vertical",
-          backgroundColor: "#1e4620",
-          contents: [
-            { type: "text", text: "🏠 304 Housing by Be More", color: "#ffffff", weight: "bold", size: "md" },
-            { type: "text", text: "บริการหาบ้านเช่ารอบนิคม 304", color: "#bbf7d0", size: "sm", margin: "xs" }
-          ]
-        },
-        body: {
-          type: "box", layout: "vertical", spacing: "md",
-          contents: [
-            { type: "text", text: "ยินดีต้อนรับครับ! 👋", weight: "bold", size: "lg" },
-            { type: "text", text: "เราช่วยหาบ้านเช่าคุณภาพดีรอบนิคมอุตสาหกรรม 304 จ.ปราจีนบุรี", wrap: true, color: "#555555", size: "sm" },
-            { type: "separator", margin: "md" },
-            {
-              type: "box", layout: "vertical", spacing: "sm",
-              contents: [
-                bulletText("🏠 ฝากทรัพย์ — ลงประกาศบ้านเช่าฟรี"),
-                bulletText("📝 ลงทะเบียนสนใจเช่า — แจ้งทำเล/งบประมาณ"),
-                bulletText("📅 นัดชม — จองเวลาดูบ้านสะดวก"),
-                bulletText("🌐 รองรับ 4 ภาษา TH/EN/ZH/JA"),
-              ]
-            }
-          ]
-        },
-        footer: {
-          type: "box", layout: "vertical", spacing: "sm",
-          contents: [
-            {
-              type: "button", style: "primary", color: "#1e4620",
-              action: { type: "uri", label: "🏠 ฝากทรัพย์เลย", uri: INTAKE_FORM_URL }
-            },
-            {
-              type: "button", style: "primary", color: "#1e4620",
-              action: { type: "uri", label: "📝 ลงทะเบียนสนใจเช่า", uri: buildCustomerRegisterUri(userId) }
-            }
-          ]
-        }
-      }
-    }
-  ]);
+  pushLine(userId, [flexMainMenu(userId)]);
 }
 
-// ── Unfollow: บันทึกลง Sheet ──────────────────────────────
 function handleUnfollow(event) {
   const userId = event.source && event.source.userId;
   Logger.log("Unfollow: " + userId);
@@ -309,12 +263,11 @@ function handleMessage(event) {
     return;
   }
 
-  // ── Default: แนะนำเมนู ──
-  pushLine(userId, [{
-    type: "text",
-    text: "สวัสดีครับ! พิมพ์คำสั่งเหล่านี้ได้เลยครับ:\n\n🏠 ฝากทรัพย์\n📝 ลงทะเบียนเช่า\n📅 นัดชม\n💰 ราคา\n📞 ติดต่อ"
-  }]);
+  // ── Default: แสดงเมนูหลัก ──
+  pushLine(userId, [flexMainMenu(userId)]);
 }
+
+
 
 // ── Postback: ปุ่ม Rich Menu / Flex ──────────────────────────
 function handlePostback(event) {
@@ -337,6 +290,53 @@ function handlePostback(event) {
 // ═════════════════════════════════════════════════════════════
 //  FLEX MESSAGE TEMPLATES
 // ═════════════════════════════════════════════════════════════
+
+function flexMainMenu(userId) {
+  return {
+    type: "flex",
+    altText: "เมนูหลัก 304 Housing by Be More",
+    contents: {
+      type: "bubble",
+      header: {
+        type: "box", layout: "vertical",
+        backgroundColor: "#1e4620",
+        contents: [
+          { type: "text", text: "🏠 304 Housing by Be More", color: "#ffffff", weight: "bold", size: "md" },
+          { type: "text", text: "บริการหาบ้านเช่ารอบนิคม 304", color: "#bbf7d0", size: "sm", margin: "xs" }
+        ]
+      },
+      body: {
+        type: "box", layout: "vertical", spacing: "md",
+        contents: [
+          { type: "text", text: "ยินดีต้อนรับครับ 👋", weight: "bold", size: "lg" },
+          { type: "text", text: "กรุณาเลือกว่าท่านเป็นฝ่ายใดครับ", wrap: true, color: "#555555", size: "sm" },
+          { type: "separator", margin: "md" },
+          {
+            type: "box", layout: "vertical", spacing: "sm",
+            contents: [
+              bulletText("🏠 เจ้าของบ้าน — ฝากบ้านให้เช่าฟรี"),
+              bulletText("🔍 ผู้เช่า — ลงทะเบียนหาบ้านเช่า"),
+              bulletText("🌐 รองรับ 4 ภาษา TH/EN/ZH/JA"),
+            ]
+          }
+        ]
+      },
+      footer: {
+        type: "box", layout: "vertical", spacing: "sm",
+        contents: [
+          {
+            type: "button", style: "primary", color: "#1e4620",
+            action: { type: "uri", label: "เจ้าของบ้านฝากบ้านให้เช่า", uri: INTAKE_FORM_URL }
+          },
+          {
+            type: "button", style: "primary", color: "#1e4620",
+            action: { type: "uri", label: "ผู้เช่าหาบ้านเช่า", uri: buildCustomerRegisterUri(userId) }
+          }
+        ]
+      }
+    }
+  };
+}
 
 function flexIntakeCard() {
   return {
