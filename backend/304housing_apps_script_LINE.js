@@ -38,6 +38,9 @@ const LINE_PUSH_URL  = "https://api.line.me/v2/bot/message/push";
 // LIFF URL ของฟอร์มฝากทรัพย์ (เปลี่ยนเป็น URL จริงหลัง deploy)
 const INTAKE_FORM_URL = "https://bemore304housing-debug.github.io/304housing/intake-form.html";
 
+// URL ฟอร์มลงทะเบียนผู้สนใจเช่า (ฝั่งผู้เช่า — Agency ติดต่อกลับเพื่อนัดชม)
+const CUSTOMER_REGISTER_URL = "https://bemore304housing-debug.github.io/304housing/customer-register.html";
+
 // ชื่อโฟลเดอร์ Google Drive สำหรับเก็บรูปทรัพย์
 // Script จะสร้างโฟลเดอร์นี้ใน Drive ของ account ที่รัน Script อัตโนมัติ
 const DRIVE_FOLDER_NAME = "304Housing-Photos";
@@ -142,6 +145,7 @@ function doPost(e) {
       const data = body;
       if (data.action === "approve") return approveSubmission(Number(data.row), data.property_code || "");
       if (data.action === "reject")  return rejectSubmission(Number(data.row), data.reason || "");
+      if (data.action === "save_customer_lead") return saveCustomerLead(data);
     }
 
     // ── 2. Form data (multipart / x-www-form-urlencoded) ──────
@@ -150,6 +154,7 @@ function doPost(e) {
     if (data.action === "uploadImage") return uploadImage(data);
     if (data.action === "approve")     return approveSubmission(Number(data.row), data.property_code || "");
     if (data.action === "reject")      return rejectSubmission(Number(data.row), data.reason || "");
+    if (data.action === "save_customer_lead") return saveCustomerLead(data);
 
     // ── 3. บันทึก Intake Form ──────────────────────────────────
     return saveSubmission(data);
@@ -224,7 +229,7 @@ function handleFollow(event) {
               type: "box", layout: "vertical", spacing: "sm",
               contents: [
                 bulletText("🏠 ฝากทรัพย์ — ลงประกาศบ้านเช่าฟรี"),
-                bulletText("🔍 ค้นหาบ้าน — ดูทรัพย์พร้อมเช่า"),
+                bulletText("📝 ลงทะเบียนสนใจเช่า — แจ้งทำเล/งบประมาณ"),
                 bulletText("📅 นัดชม — จองเวลาดูบ้านสะดวก"),
                 bulletText("🌐 รองรับ 4 ภาษา TH/EN/ZH/JA"),
               ]
@@ -239,8 +244,8 @@ function handleFollow(event) {
               action: { type: "uri", label: "🏠 ฝากทรัพย์เลย", uri: INTAKE_FORM_URL }
             },
             {
-              type: "button", style: "secondary",
-              action: { type: "message", label: "🔍 ค้นหาบ้าน", text: "ค้นหาบ้าน" }
+              type: "button", style: "primary", color: "#1e4620",
+              action: { type: "uri", label: "📝 ลงทะเบียนสนใจเช่า", uri: buildCustomerRegisterUri(userId) }
             }
           ]
         }
@@ -268,7 +273,13 @@ function handleMessage(event) {
     return;
   }
 
-  // ── ค้นหาบ้าน ──
+  // ── ลงทะเบียนสนใจเช่า (ฝั่งผู้เช่า — Agency ติดต่อกลับเพื่อนัดชม/ทำสัญญา) ──
+  if (matchKeyword(text, ["ลงทะเบียนเช่า", "สนใจเช่า", "อยากเช่า", "ต้องการเช่า", "แจ้งความประสงค์เช่า"])) {
+    pushLine(userId, [flexCustomerRegisterCard(userId)]);
+    return;
+  }
+
+  // ── ค้นหาบ้าน (ยังไม่เปิดใช้ Phase นี้ — คงคีย์เวิร์ดเดิมไว้เผื่ออนาคต) ──
   if (matchKeyword(text, ["ค้นหาบ้าน", "หาบ้าน", "ดูบ้าน", "เช่าบ้าน", "search", "find"])) {
     pushLine(userId, [flexSearchCard()]);
     return;
@@ -301,7 +312,7 @@ function handleMessage(event) {
   // ── Default: แนะนำเมนู ──
   pushLine(userId, [{
     type: "text",
-    text: "สวัสดีครับ! พิมพ์คำสั่งเหล่านี้ได้เลยครับ:\n\n🏠 ฝากทรัพย์\n🔍 ค้นหาบ้าน\n📅 นัดชม\n💰 ราคา\n📞 ติดต่อ"
+    text: "สวัสดีครับ! พิมพ์คำสั่งเหล่านี้ได้เลยครับ:\n\n🏠 ฝากทรัพย์\n📝 ลงทะเบียนเช่า\n📅 นัดชม\n💰 ราคา\n📞 ติดต่อ"
   }]);
 }
 
@@ -312,6 +323,7 @@ function handlePostback(event) {
   if (!data) return;
 
   if (data === "action=intake")  { pushLine(userId, [flexIntakeCard()]);  return; }
+  if (data === "action=customer_register") { pushLine(userId, [flexCustomerRegisterCard(userId)]); return; }
   if (data === "action=search")  { pushLine(userId, [flexSearchCard()]);  return; }
   if (data === "action=contact") {
     pushLine(userId, [{
@@ -360,6 +372,48 @@ function flexIntakeCard() {
         contents: [{
           type: "button", style: "primary", color: "#1e4620",
           action: { type: "uri", label: "เปิดฟอร์มฝากทรัพย์ →", uri: INTAKE_FORM_URL }
+        }]
+      }
+    }
+  };
+}
+
+// ฟอร์มลงทะเบียนผู้สนใจเช่า — Agency เป็นตัวกลางติดต่อเจ้าของ/นัดชม/ทำสัญญา
+// ผู้เช่าไม่ติดต่อเจ้าของทรัพย์โดยตรง
+function flexCustomerRegisterCard(userId) {
+  return {
+    type: "flex",
+    altText: "ลงทะเบียนสนใจเช่าที่พัก",
+    contents: {
+      type: "bubble",
+      header: {
+        type: "box", layout: "vertical", backgroundColor: "#1e4620",
+        contents: [
+          { type: "text", text: "📝 ลงทะเบียนสนใจเช่า", color: "#ffffff", weight: "bold", size: "lg" },
+          { type: "text", text: "304 Housing by Be More", color: "#bbf7d0", size: "xs" }
+        ]
+      },
+      body: {
+        type: "box", layout: "vertical", spacing: "sm",
+        contents: [
+          { type: "text", text: "แจ้งทำเลและงบประมาณที่ต้องการ ทีมงานจะติดต่อกลับเพื่อนัดหมายดูทรัพย์ที่ตรงใจ", wrap: true, color: "#555555", size: "sm" },
+          { type: "text", text: "ใช้เวลาประมาณ 1 นาที ไม่มีค่าใช้จ่าย", wrap: true, color: "#888888", size: "xs" },
+          { type: "separator", margin: "md" },
+          {
+            type: "box", layout: "vertical", spacing: "xs",
+            contents: [
+              bulletText("📋 กรอกทำเล งบประมาณ และช่องทางติดต่อ"),
+              bulletText("📞 ทีมงานติดต่อกลับเพื่อนัดชมทรัพย์"),
+              bulletText("🤝 ดูแลตั้งแต่นัดชมจนถึงทำสัญญาเช่า"),
+            ]
+          }
+        ]
+      },
+      footer: {
+        type: "box", layout: "vertical",
+        contents: [{
+          type: "button", style: "primary", color: "#1e4620",
+          action: { type: "uri", label: "ลงทะเบียนเลย →", uri: buildCustomerRegisterUri(userId) }
         }]
       }
     }
@@ -501,6 +555,31 @@ function notifyAdminNewSubmission(data, rowNum) {
   pushLine(groupId, [{ type: "text", text: msg }]);
 }
 
+// Push แจ้ง Admin Group เมื่อมีลูกค้าลงทะเบียนสนใจเช่าใหม่
+// (Agency เป็นตัวกลาง — ติดต่อลูกค้ากลับเพื่อนัดชมทรัพย์ ไม่ให้ผู้เช่าติดต่อเจ้าของตรง)
+function notifyAdminNewLead(data, rowNum) {
+  const groupId = PropertiesService.getScriptProperties().getProperty("ADMIN_LINE_GROUP_ID");
+  if (!groupId || !LINE_TOKEN()) return;
+
+  const msg = [
+    "🙋 ลูกค้าสนใจเช่าลงทะเบียนใหม่!",
+    "",
+    "📋 แถวที่: " + rowNum,
+    "👤 " + (data.fullName || "-"),
+    "📞 " + (data.phoneNumber || "-"),
+    (data.email ? "✉️ " + data.email : ""),
+    (data.lineId ? "💬 LINE ID: " + data.lineId : ""),
+    (data.lineUserId ? "🔗 เชื่อมต่อผ่าน LINE bot แล้ว (ทักกลับได้ทันที)" : ""),
+    "📍 ทำเล: " + (data.targetLocation || "ไม่ระบุ"),
+    "💰 งบประมาณ: " + (data.budgetRange || "ไม่ระบุ"),
+    "🌐 ภาษา: " + (data.preferredLanguage || "-"),
+    "",
+    "➡️ ติดต่อลูกค้าเพื่อนัดหมายดูทรัพย์"
+  ].filter(l => l !== undefined && l !== "").join("\n");
+
+  pushLine(groupId, [{ type: "text", text: msg }]);
+}
+
 // Push แจ้งเจ้าของ LINE เมื่ออนุมัติทรัพย์
 function notifyOwnerApproved(ownerUserId, propertyCode, propertyType) {
   if (!ownerUserId || !LINE_TOKEN()) return;
@@ -597,6 +676,61 @@ function saveSubmission(data) {
   notifyAdminNewSubmission(data, lastRow);
 
   return jsonResponse({ status: "success", message: "บันทึกข้อมูลเรียบร้อย", row: lastRow });
+}
+
+
+// ═════════════════════════════════════════════════════════════
+//  CUSTOMER LEAD (ผู้สนใจเช่า) — Agency ติดต่อกลับเพื่อนัดชม/ทำสัญญา
+// ═════════════════════════════════════════════════════════════
+
+const CUSTOMER_HEADERS = ["timestamp","lineUserId","fullName","phoneNumber","email","foreignSocial","lineId","targetLocation","budgetRange","preferredLanguage","saveSearch","status"];
+
+function saveCustomerLead(data) {
+  try {
+    const ss    = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = getOrCreateSheet(ss, "customers");
+
+    if (sheet.getLastRow() === 0) {
+      sheet.getRange(1, 1, 1, CUSTOMER_HEADERS.length).setValues([CUSTOMER_HEADERS])
+        .setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
+    }
+
+    const fieldMap = {
+      timestamp          : new Date(),
+      lineUserId          : data.lineUserId          || "",
+      fullName            : data.fullName            || "",
+      phoneNumber         : data.phoneNumber         || "",
+      email               : data.email               || "",
+      foreignSocial       : data.foreignSocial       || "",
+      lineId              : data.lineId              || "",
+      targetLocation      : data.targetLocation      || "",
+      budgetRange         : data.budgetRange         || "",
+      preferredLanguage   : data.preferredLanguage   || "",
+      saveSearch          : data.saveSearch          || "",
+      status              : "ใหม่",
+    };
+
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const row = headers.map(h => fieldMap.hasOwnProperty(h) ? fieldMap[h] : "");
+    sheet.appendRow(row);
+
+    const lastRow = sheet.getLastRow();
+    const statusCol = headers.indexOf("status") + 1;
+    if (statusCol > 0) sheet.getRange(lastRow, statusCol).setBackground("#EDE9FE");
+
+    // แจ้ง Admin LINE Group ให้ทีมงานติดต่อกลับ (Agency เป็นตัวกลาง)
+    notifyAdminNewLead(fieldMap, lastRow);
+
+    return jsonResponse({ status: "success", message: "ลงทะเบียนเรียบร้อย ทีมงานจะติดต่อกลับโดยเร็วที่สุดครับ", row: lastRow });
+
+  } catch (err) {
+    return jsonResponse({ status: "error", message: err.toString() });
+  }
+}
+
+// สร้าง URL ฟอร์มลงทะเบียนผู้เช่า พร้อมแนบ lineUserId (ถ้ามี) เพื่อให้ฟอร์มรู้จักผู้ใช้อัตโนมัติ
+function buildCustomerRegisterUri(userId) {
+  return userId ? (CUSTOMER_REGISTER_URL + "?lineUserId=" + encodeURIComponent(userId)) : CUSTOMER_REGISTER_URL;
 }
 
 
@@ -753,6 +887,17 @@ function getDashboard() {
         .filter(r => r[0] === "เผยแพร่").length;
     }
 
+    let newLeadCount = 0;
+    const custSheet = ss.getSheetByName("customers");
+    if (custSheet && custSheet.getLastRow() > 1) {
+      const custHeaders = custSheet.getRange(1, 1, 1, custSheet.getLastColumn()).getValues()[0];
+      const statusCol = custHeaders.indexOf("status") + 1;
+      if (statusCol > 0) {
+        newLeadCount = custSheet.getRange(2, statusCol, custSheet.getLastRow() - 1, 1).getValues()
+          .filter(r => r[0] === "ใหม่").length;
+      }
+    }
+
     let expiringCount = 0, expiringList = [];
     const ctSheet = ss.getSheetByName("contracts");
     if (ctSheet && ctSheet.getLastRow() > 1) {
@@ -774,7 +919,7 @@ function getDashboard() {
       });
     }
 
-    return jsonResponse({ status: "success", pending_count: pendingCount, published_count: publishedCount, expiring_count: expiringCount, expiring_list: expiringList });
+    return jsonResponse({ status: "success", pending_count: pendingCount, published_count: publishedCount, new_lead_count: newLeadCount, expiring_count: expiringCount, expiring_list: expiringList });
   } catch (err) {
     return jsonResponse({ status: "error", message: err.toString() });
   }
@@ -844,6 +989,9 @@ function setupSheets() {
   const ctHeaders = ["contract_code","property_code","tenant_name","start_date","expiry_date","rent_amount","status","notes"];
   const ctSheet = getOrCreateSheet(ss, "contracts");
   ctSheet.getRange(1, 1, 1, ctHeaders.length).setValues([ctHeaders]).setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
+
+  const custSheet = getOrCreateSheet(ss, "customers");
+  custSheet.getRange(1, 1, 1, CUSTOMER_HEADERS.length).setValues([CUSTOMER_HEADERS]).setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
 
   Logger.log("✅ setupSheets() เสร็จสมบูรณ์");
 }
