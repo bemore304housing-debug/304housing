@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
-<head>
+<html lang="th"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ลงทะเบียนค้นหาทรัพย์ - 304 Housing by Be More</title>
@@ -25,14 +24,14 @@
         /* Fallback so popups stay hidden even if Tailwind CDN fails to load */
         .hidden { display: none !important; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col justify-between">
 
     <!-- Header / Navbar -->
     <header class="theme-bg text-white py-4 px-6 shadow-md text-center">
         <h1 class="text-xl font-semibold tracking-wide">304 Housing by Be More</h1>
-        <p class="text-xs opacity-80 mt-1">บริการจัดหาที่พักอาศัย นิคม 304 และพื้นที่ใกล้เคียง</p>
+        <p class="text-xs opacity-80 mt-1" id="pageSubtitle">บริการจัดหาที่พักอาศัย นิคม 304 และพื้นที่ใกล้เคียง</p>
     </header>
 
     <!-- Main Container -->
@@ -40,14 +39,14 @@
         <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md border border-gray-100">
 
             <div class="text-center mb-6">
-                <h2 class="text-lg font-medium text-gray-800">สนใจเช่าที่พักรอบนิคม 304?</h2>
-                <p class="text-sm text-gray-500 mt-1">ทีมงานจะติดต่อกลับเพื่อนัดหมายดูทรัพย์ที่ตรงใจ</p>
+                <h2 class="text-lg font-medium text-gray-800" id="formTitle">สนใจเช่าที่พักรอบนิคม 304?</h2>
+                <p class="text-sm text-gray-500 mt-1" id="formSubtitle">ทีมงานจะติดต่อกลับเพื่อนัดหมายดูทรัพย์ที่ตรงใจ</p>
             </div>
 
             <!-- Badge: เชื่อมต่อผ่าน LINE แล้ว (แสดงเมื่อเปิดจากบอท LINE) -->
             <div id="lineConnectedBadge" class="hidden mb-4 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
                 <i class="fa-brands fa-line text-green-700"></i>
-                <span class="text-xs text-green-800 font-medium">เชื่อมต่อผ่าน LINE แล้ว — ทีมงานทักกลับได้ทันที</span>
+                <span class="text-xs text-green-800 font-medium" id="lineConnectedText">เชื่อมต่อผ่าน LINE แล้ว — ทีมงานทักกลับได้ทันที</span>
             </div>
 
             <!-- Form Start -->
@@ -55,22 +54,22 @@
 
                 <!-- ชื่อ-นามสกุล -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อ - นามสกุล <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelFullName">ชื่อ - นามสกุล <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-regular fa-user"></i></span>
-                        <input type="text" id="fullName" required class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="ชื่อ นามสกุล">
+                        <input type="text" id="fullName" required="" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="ชื่อ นามสกุล">
                     </div>
                 </div>
 
                 <!-- เบอร์โทรศัพท์ (Required) -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">หมายเลขโทรศัพท์ <span class="text-red-500">*</span></label>
-                    <input type="tel" id="phoneNumber" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="หมายเลขโทรศัพท์ *">
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelPhone">หมายเลขโทรศัพท์ <span class="text-red-500">*</span></label>
+                    <input type="tel" id="phoneNumber" required="" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="หมายเลขโทรศัพท์ *">
                 </div>
 
                 <!-- อีเมล -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">อีเมล</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelEmail">อีเมล</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-regular fa-envelope"></i></span>
                         <input type="email" id="email" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="example@email.com">
@@ -79,7 +78,7 @@
 
                 <!-- Social Contact: WhatsApp / WeChat / LINE -->
                 <div id="socialContactBlock">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">ช่องทางติดต่อเพิ่มเติม (เลือก 1 ช่องทาง)</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelSocial">ช่องทางติดต่อเพิ่มเติม (เลือก 1 ช่องทาง)</label>
                     <div class="grid grid-cols-3 gap-2 mb-2">
                         <button type="button" data-social="whatsapp" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</button>
                         <button type="button" data-social="wechat" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition"><i class="fa-brands fa-weixin mr-1"></i>WeChat</button>
@@ -92,7 +91,7 @@
 
                 <!-- พื้นที่ที่ต้องการเช่า -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">พื้นที่ที่ต้องการเช่า / ทำเล</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelLocation">พื้นที่ที่ต้องการเช่า / ทำเล</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-solid fa-location-dot"></i></span>
                         <input type="text" id="targetLocation" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="เช่น ใกล้นิคม 304, ท่าตูม, ศรีมหาโพธิ">
@@ -101,75 +100,70 @@
 
                 <!-- ช่วงงบประมาณ (Required) -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">กรุณาเลือกช่วงงบประมาณ <span class="text-red-500">*</span></label>
-                    <select id="budgetRange" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620] bg-white text-gray-700">
-                        <option value="" disabled selected>กรุณาเลือกช่วงงบประมาณ *</option>
-                        <option value="ต่ำกว่า 3,000 บาท">ต่ำกว่า 3,000 บาท</option>
-                        <option value="3,000 - 5,000 บาท">3,000 - 5,000 บาท</option>
-                        <option value="5,000 - 10,000 บาท">5,000 - 10,000 บาท</option>
-                        <option value="10,000 - 20,000 บาท">10,000 - 20,000 บาท</option>
-                        <option value="20,000 บาทขึ้นไป">20,000 บาทขึ้นไป</option>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelBudget">กรุณาเลือกช่วงงบประมาณ <span class="text-red-500">*</span></label>
+                    <select id="budgetRange" required="" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620] bg-white text-gray-700">
+                        <option value="" disabled="" selected="" data-i18n-key="budget0">กรุณาเลือกช่วงงบประมาณ *</option>
+                        <option value="ต่ำกว่า 3,000 บาท" data-i18n-key="budget1">ต่ำกว่า 3,000 บาท</option>
+                        <option value="3,000 - 5,000 บาท" data-i18n-key="budget2">3,000 - 5,000 บาท</option>
+                        <option value="5,000 - 10,000 บาท" data-i18n-key="budget3">5,000 - 10,000 บาท</option>
+                        <option value="10,000 - 20,000 บาท" data-i18n-key="budget4">10,000 - 20,000 บาท</option>
+                        <option value="20,000 บาทขึ้นไป" data-i18n-key="budget5">20,000 บาทขึ้นไป</option>
                     </select>
                 </div>
 
                 <!-- ระยะเวลาการเช่า -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">ระยะเวลาการเช่า</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelDuration">ระยะเวลาการเช่า</label>
                     <select id="rentalDuration" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620] bg-white text-gray-700">
-                        <option value="" disabled selected>กรุณาเลือกระยะเวลาการเช่า</option>
-                        <option value="6 เดือน">6 เดือน</option>
-                        <option value="1 ปี">1 ปี</option>
-                        <option value="มากกว่า 1 ปี">มากกว่า 1 ปี</option>
+                        <option value="" disabled="" selected="" data-i18n-key="duration0">กรุณาเลือกระยะเวลาการเช่า</option>
+                        <option value="6 เดือน" data-i18n-key="duration1">6 เดือน</option>
+                        <option value="1 ปี" data-i18n-key="duration2">1 ปี</option>
+                        <option value="มากกว่า 1 ปี" data-i18n-key="duration3">มากกว่า 1 ปี</option>
                     </select>
                 </div>
 
                 <!-- เดือนที่ต้องการย้ายเข้า -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">มีความประสงค์จะย้ายเข้าอยู่ช่วงเดือนไหน</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelMoveIn">มีความประสงค์จะย้ายเข้าอยู่ช่วงเดือนไหน</label>
                     <select id="moveInMonth" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620] bg-white text-gray-700">
-                        <option value="" disabled selected>กรุณาเลือกเดือนที่ต้องการย้ายเข้า</option>
-                        <option value="มกราคม">มกราคม</option>
-                        <option value="กุมภาพันธ์">กุมภาพันธ์</option>
-                        <option value="มีนาคม">มีนาคม</option>
-                        <option value="เมษายน">เมษายน</option>
-                        <option value="พฤษภาคม">พฤษภาคม</option>
-                        <option value="มิถุนายน">มิถุนายน</option>
-                        <option value="กรกฎาคม">กรกฎาคม</option>
-                        <option value="สิงหาคม">สิงหาคม</option>
-                        <option value="กันยายน">กันยายน</option>
-                        <option value="ตุลาคม">ตุลาคม</option>
-                        <option value="พฤศจิกายน">พฤศจิกายน</option>
-                        <option value="ธันวาคม">ธันวาคม</option>
+                        <option value="" disabled="" selected="" data-i18n-key="month0">กรุณาเลือกเดือนที่ต้องการย้ายเข้า</option>
+                        <option value="มกราคม" data-i18n-key="month1">มกราคม</option>
+                        <option value="กุมภาพันธ์" data-i18n-key="month2">กุมภาพันธ์</option>
+                        <option value="มีนาคม" data-i18n-key="month3">มีนาคม</option>
+                        <option value="เมษายน" data-i18n-key="month4">เมษายน</option>
+                        <option value="พฤษภาคม" data-i18n-key="month5">พฤษภาคม</option>
+                        <option value="มิถุนายน" data-i18n-key="month6">มิถุนายน</option>
+                        <option value="กรกฎาคม" data-i18n-key="month7">กรกฎาคม</option>
+                        <option value="สิงหาคม" data-i18n-key="month8">สิงหาคม</option>
+                        <option value="กันยายน" data-i18n-key="month9">กันยายน</option>
+                        <option value="ตุลาคม" data-i18n-key="month10">ตุลาคม</option>
+                        <option value="พฤศจิกายน" data-i18n-key="month11">พฤศจิกายน</option>
+                        <option value="ธันวาคม" data-i18n-key="month12">ธันวาคม</option>
                     </select>
                 </div>
 
                 <!-- ภาษาที่ต้องการ -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">กรุณาเลือกภาษาที่ต้องการ</label>
-                    <select id="preferredLanguage" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620] bg-white text-gray-700">
-                        <option value="TH" selected>ภาษาไทย (TH)</option>
-                        <option value="EN">English (EN)</option>
-                        <option value="CN">中文 (CN)</option>
-                        <option value="JP">日本語 (JP)</option>
-                    </select>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelLanguage">กรุณาเลือกภาษาที่ต้องการ</label><div class="grid grid-cols-4 gap-2" id="langButtonRow"><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="TH">ไทย</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="EN">EN</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="CN">中文</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="JP">日本語</button></div><input type="hidden" id="preferredLanguage" value="TH">
+                    
                 </div>
 
                 <!-- Toggle บันทึกการค้นหา -->
                 <div class="flex items-center justify-between py-2 border-y border-gray-100 my-2">
-                    <span class="text-sm font-medium text-gray-700 flex items-center"><i class="fa-regular fa-lightbulb text-amber-500 mr-2 text-base"></i> สร้างบันทึกการค้นหา</span>
+                    <span class="text-sm font-medium text-gray-700 flex items-center"><i class="fa-regular fa-lightbulb text-amber-500 mr-2 text-base"></i> <span id="labelSaveSearchText">สร้างบันทึกการค้นหา</span></span>
                     <label class="switch">
-                        <input type="checkbox" id="saveSearchToggle" checked>
+                        <input type="checkbox" id="saveSearchToggle" checked="">
                         <span class="slider"></span>
                     </label>
                 </div>
 
                 <!-- นโยบายความเป็นส่วนตัว & ปุ่มส่ง -->
-                <div class="text-xs text-gray-500 leading-relaxed pt-2">
+                <div class="text-xs text-gray-500 leading-relaxed pt-2" id="consentText">
                     เมื่อคลิก "ดำเนินการ" ฉันยืนยันว่าฉันได้อ่านและเข้าใจ <a href="#" class="text-amber-600 underline">นโยบายความเป็นส่วนตัว</a> แล้ว และยินยอมให้ Be More Group ติดต่อฉันเพื่อแจ้งข้อมูลอัปเดตเกี่ยวกับทรัพย์สินและข้อมูลที่เกี่ยวข้อง
                 </div>
 
                 <button type="submit" id="btnSubmit" class="w-full theme-bg hover:bg-[#153216] text-white font-medium py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center">
-                    <span>ดำเนินการ</span> <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                    <span id="btnSubmitText">ดำเนินการ</span> <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
                 </button>
             </form>
             <!-- Form End -->
@@ -180,10 +174,9 @@
     <div id="successModal" class="modal-overlay hidden">
         <div class="bg-white rounded-2xl p-6 mx-6 shadow-2xl text-center max-w-sm">
             <div class="text-5xl mb-3">🎉</div>
-            <h2 class="text-lg font-bold text-gray-800 mb-1">ลงทะเบียนสำเร็จ!</h2>
-            <p class="text-sm text-gray-500 mb-4">ทีมงานจะติดต่อกลับเพื่อนัดหมายดูทรัพย์ที่ตรงใจโดยเร็วที่สุด</p>
-            <button onclick="document.getElementById('successModal').classList.add('hidden')"
-                class="w-full theme-bg text-white font-medium py-2.5 rounded-xl text-sm">
+            <h2 class="text-lg font-bold text-gray-800 mb-1" id="modalTitle">ลงทะเบียนสำเร็จ!</h2>
+            <p class="text-sm text-gray-500 mb-4" id="modalMessage">ทีมงานจะติดต่อกลับเพื่อนัดหมายดูทรัพย์ที่ตรงใจโดยเร็วที่สุด</p>
+            <button onclick="document.getElementById('successModal').classList.add('hidden')" class="w-full theme-bg text-white font-medium py-2.5 rounded-xl text-sm" id="modalCloseBtn">
                 ปิดหน้าต่าง
             </button>
         </div>
@@ -191,7 +184,7 @@
 
     <!-- Footer -->
     <footer class="bg-gray-100 text-center py-3 text-xs text-gray-400 border-t border-gray-200">
-        &copy; 2026 Be More Group. All Rights Reserved.
+        © 2026 Be More Group. All Rights Reserved.
     </footer>
 
     <!-- JavaScript Handling Backend Connection -->
@@ -228,7 +221,7 @@
                     selectedSocial = this.dataset.social;
                     buttons.forEach(b => b.classList.remove('theme-bg','text-white','border-[#1e4620]'));
                     this.classList.add('theme-bg','text-white','border-[#1e4620]');
-                    input.placeholder = 'กรอก ' + this.textContent.trim() + ' ID';
+                    input.placeholder = getEnterIdPlaceholder(this.textContent.trim());
                     syncHidden();
                 });
             });
@@ -239,13 +232,13 @@
             e.preventDefault();
 
             const requiredFields = [
-                { id: 'phoneNumber', label: 'หมายเลขโทรศัพท์' },
-                { id: 'budgetRange', label: 'ช่วงงบประมาณ' },
-            ];
+            { id: 'phoneNumber', key: 'fieldPhone' },
+            { id: 'budgetRange', key: 'fieldBudget' },
+        ];
             for (const f of requiredFields) {
                 const el = document.getElementById(f.id);
                 if (!el.value.trim()) {
-                    alert(`⚠️ กรุณากรอก "${f.label}"`);
+                    alert(I18N[currentLang].pleaseEnter + ' "' + I18N[currentLang][f.key] + '"');
                     el.focus();
                     return;
                 }
@@ -253,7 +246,7 @@
 
             const submitButton = document.getElementById('btnSubmit');
             submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> กำลังบันทึกข้อมูล...';
+            submitButton.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> ' + I18N[currentLang].saving;
 
             // ใช้ FormData (แบบเดียวกับ intake-form.html ที่ยืนยันแล้วว่าทำงานได้จริงกับ
             // Google Apps Script Web App — หลีกเลี่ยงปัญหา CORS preflight ของ JSON body)
@@ -278,22 +271,92 @@
                 if (data.status === "success") {
                     document.getElementById('successModal').classList.remove('hidden');
                     document.getElementById('leadForm').reset();
+                document.getElementById('preferredLanguage').value = currentLang;
                     if (lineUserId) {
                         document.getElementById('lineConnectedBadge').classList.remove('hidden');
                     }
                 } else {
-                    alert("เกิดข้อผิดพลาดจากระบบ: " + data.message);
+                    alert(I18N[currentLang].errorPrefix + data.message);
                 }
             })
             .catch(err => {
                 console.error("Error:", err);
-                alert("ไม่สามารถติดต่อเซิร์ฟเวอร์ระบบได้ กรุณาลองใหม่อีกครั้ง");
+                alert(I18N[currentLang].networkError);
             })
             .finally(() => {
                 submitButton.disabled = false;
-                submitButton.innerHTML = '<span>ดำเนินการ</span> <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>';
+                submitButton.innerHTML = '<span id="btnSubmitText">' + I18N[currentLang].submit + '</span> <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>';
             });
         });
+    </script><script>
+        // ===== i18n: TH/EN/CN/JP translation for this page =====
+        var I18N = {"TH":{"pageTitle":"ลงทะเบียนค้นหาทรัพย์ - 304 Housing by Be More","pageSubtitle":"บริการจัดหาที่พักอาศัย นิคม 304 และพื้นที่ใกล้เคียง","formTitle":"สนใจเช่าที่พักรอบนิคม 304?","formSubtitle":"ทีมงานจะติดต่อกลับเพื่อนัดหมายดูทรัพย์ที่ตรงใจ","lineConnectedText":"เชื่อมต่อผ่าน LINE แล้ว — ทีมงานจะทักไปให้ทันที","labelFullName":"ชื่อ - นามสกุล *","labelPhone":"หมายเลขโทรศัพท์ *","labelEmail":"อีเมล","labelSocial":"ช่องทางติดต่อเพิ่มเติม (เลือก 1 ช่องทาง)","labelLocation":"พื้นที่ที่ต้องการเช่า / ทำเล","labelBudget":"กรุณาเลือกช่วงงบประมาณ *","labelDuration":"ระยะเวลาการเช่า","labelMoveIn":"มีความประสงค์จะย้ายเข้าอยู่ช่วงเดือนไหน","labelLanguage":"กรุณาเลือกภาษาที่ต้องการ","labelSaveSearchText":"สร้างบันทึกการค้นหา","fullNamePh":"ชื่อ นามสกุล","phonePh":"หมายเลขโทรศัพท์ *","locationPh":"เช่น ใกล้นิคม 304, ท่าตูม, ศรีมหาโพธิ","socialDefaultPh":"เลือกช่องทางด้านบน แล้วกรอก ID","enterIdTemplate":"กรอก {label} ID","budget":["กรุณาเลือกช่วงงบประมาณ *","ต่ำกว่า 3,000 บาท","3,000 - 5,000 บาท","5,000 - 10,000 บาท","10,000 - 20,000 บาท","20,000 บาทขึ้นไป"],"duration":["กรุณาเลือกระยะเวลาการเช่า","6 เดือน","1 ปี","มากกว่า 1 ปี"],"month":["กรุณาเลือกเดือนที่ต้องการย้ายเข้า","มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"],"consentHTML":"เมื่อคลิก \"ดำเนินการ\" ฉันยืนยันว่าฉันได้อ่านและเข้าใจ <a href=\"#\" class=\"theme-text underline\">นโยบายความเป็นส่วนตัว</a> แล้ว และยินยอมให้ Be More Group ติดต่อฉันเพื่อแจ้งข้อมูลอัปเดตเกี่ยวกับทรัพย์สินและข้อมูลที่เกี่ยวข้อง","submit":"ดำเนินการ","saving":"กำลังบันทึกข้อมูล...","pleaseEnter":"กรุณากรอก","fieldPhone":"หมายเลขโทรศัพท์","fieldBudget":"ช่วงงบประมาณ","errorPrefix":"เกิดข้อผิดพลาดจากระบบ: ","networkError":"ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง","modalTitle":"ลงทะเบียนสำเร็จ!","modalMessage":"ทีมงานจะติดต่อกลับเพื่อนัดหมายดูทรัพย์ที่ตรงใจโดยเร็วที่สุด","modalCloseBtn":"ปิดหน้าต่าง"},"EN":{"pageTitle":"Property Search Registration - 304 Housing by Be More","pageSubtitle":"Housing search service near Nikom 304 and nearby areas","formTitle":"Looking for a rental near Nikom 304?","formSubtitle":"Our team will contact you to arrange a viewing that matches your needs","lineConnectedText":"Connected via LINE — our team will message you shortly","labelFullName":"Full Name *","labelPhone":"Phone Number *","labelEmail":"Email","labelSocial":"Additional Contact Channel (choose 1)","labelLocation":"Preferred Area / Location","labelBudget":"Please select budget range *","labelDuration":"Rental Duration","labelMoveIn":"Which month would you like to move in?","labelLanguage":"Preferred Language","labelSaveSearchText":"Save this search","fullNamePh":"First name Last name","phonePh":"Phone Number *","locationPh":"e.g. near Nikom 304, Tha Tum, Si Maha Phot","socialDefaultPh":"Select a channel above, then enter your ID","enterIdTemplate":"Enter {label} ID","budget":["Please select budget range *","Below 3,000 THB","3,000 - 5,000 THB","5,000 - 10,000 THB","10,000 - 20,000 THB","20,000 THB and above"],"duration":["Please select rental duration","6 Months","1 Year","More than 1 Year"],"month":["Please select move-in month","January","February","March","April","May","June","July","August","September","October","November","December"],"consentHTML":"By clicking \"Submit\", I confirm that I have read and understood the <a href=\"#\" class=\"theme-text underline\">Privacy Policy</a>, and consent to being contacted by Be More Group with updates about properties and related information.","submit":"Submit","saving":"Saving...","pleaseEnter":"Please enter","fieldPhone":"Phone Number","fieldBudget":"Budget Range","errorPrefix":"System error: ","networkError":"Unable to reach the server. Please try again.","modalTitle":"Registration Successful!","modalMessage":"Our team will contact you shortly to arrange a viewing that matches your needs.","modalCloseBtn":"Close"},"CN":{"pageTitle":"租房登记 - 304 Housing by Be More","pageSubtitle":"304工业区及周边地区租房服务","formTitle":"有意在304工业区附近租房？","formSubtitle":"我们的团队将与您联系，安排看房","lineConnectedText":"已通过LINE连接 — 我们的团队将尽快与您联系","labelFullName":"姓名 *","labelPhone":"电话号码 *","labelEmail":"电子邮箱","labelSocial":"其他联系方式（选择1个）","labelLocation":"意向租房区域/地点","labelBudget":"请选择预算范围 *","labelDuration":"租期","labelMoveIn":"您希望在哪个月入住？","labelLanguage":"偏好语言","labelSaveSearchText":"创建搜索记录","fullNamePh":"姓 名","phonePh":"电话号码 *","locationPh":"例如：304工业区附近、Tha Tum、Si Maha Phot","socialDefaultPh":"请先选择上方渠道，然后输入ID","enterIdTemplate":"请输入{label} ID","budget":["请选择预算范围 *","3,000泰铢以下","3,000 - 5,000泰铢","5,000 - 10,000泰铢","10,000 - 20,000泰铢","20,000泰铢以上"],"duration":["请选择租期","6个月","1年","1年以上"],"month":["请选择入住月份","一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"],"consentHTML":"点击“提交”即表示我确认已阅读并理解<a href=\"#\" class=\"theme-text underline\">隐私政策</a>，并同意Be More Group就房源及相关信息与我联系。","submit":"提交","saving":"正在提交...","pleaseEnter":"请填写","fieldPhone":"电话号码","fieldBudget":"预算范围","errorPrefix":"系统错误：","networkError":"无法连接服务器，请重试。","modalTitle":"登记成功！","modalMessage":"我们的团队将尽快与您联系，安排看房。","modalCloseBtn":"关闭"},"JP":{"pageTitle":"物件検索登録 - 304 Housing by Be More","pageSubtitle":"ニコム304および周辺エリアの住宅探しサービス","formTitle":"ニコム304周辺の賃貸物件をお探しですか？","formSubtitle":"スタッフがご連絡し、ご希望に合った物件をご案内します","lineConnectedText":"LINEで接続済み — スタッフがすぐにご連絡します","labelFullName":"氏名 *","labelPhone":"電話番号 *","labelEmail":"メールアドレス","labelSocial":"その他の連絡先（1つ選択）","labelLocation":"希望エリア・場所","labelBudget":"予算範囲を選択してください *","labelDuration":"賃貸期間","labelMoveIn":"何月頃の入居をご希望ですか？","labelLanguage":"希望言語","labelSaveSearchText":"検索を保存する","fullNamePh":"姓 名","phonePh":"電話番号 *","locationPh":"例：ニコム304周辺、ター・トゥム、シーマハーポート","socialDefaultPh":"上のボタンを選択してIDを入力してください","enterIdTemplate":"{label} IDを入力","budget":["予算範囲を選択してください *","3,000バーツ未満","3,000～5,000バーツ","5,000～10,000バーツ","10,000～20,000バーツ","20,000バーツ以上"],"duration":["賃貸期間を選択してください","6ヶ月","1年","1年以上"],"month":["入居希望月を選択してください","1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],"consentHTML":"「送信」をクリックすることで、<a href=\"#\" class=\"theme-text underline\">プライバシーポリシー</a>を読み理解したことを確認し、Be More Groupが物件情報等でご連絡することに同意します。","submit":"送信する","saving":"送信中...","pleaseEnter":"入力してください：","fieldPhone":"電話番号","fieldBudget":"予算範囲","errorPrefix":"システムエラー：","networkError":"サーバーに接続できません。もう一度お試しください。","modalTitle":"登録が完了しました！","modalMessage":"スタッフが近日中にご連絡し、ご希望に合った物件をご案内します。","modalCloseBtn":"閉じる"}};
+        var currentLang = 'TH';
+
+        function applyLanguage(lang) {
+            var d = I18N[lang] || I18N.TH;
+            currentLang = lang;
+            document.title = d.pageTitle;
+            function setText(id, val) { var el = document.getElementById(id); if (el && val !== undefined) el.textContent = val; }
+            setText('pageSubtitle', d.pageSubtitle);
+            setText('formTitle', d.formTitle);
+            setText('formSubtitle', d.formSubtitle);
+            setText('lineConnectedText', d.lineConnectedText);
+            setText('labelFullName', d.labelFullName);
+            setText('labelPhone', d.labelPhone);
+            setText('labelEmail', d.labelEmail);
+            setText('labelSocial', d.labelSocial);
+            setText('labelLocation', d.labelLocation);
+            setText('labelBudget', d.labelBudget);
+            setText('labelDuration', d.labelDuration);
+            setText('labelMoveIn', d.labelMoveIn);
+            setText('labelLanguage', d.labelLanguage);
+            setText('labelSaveSearchText', d.labelSaveSearchText);
+            setText('btnSubmitText', d.submit);
+            setText('modalTitle', d.modalTitle);
+            setText('modalMessage', d.modalMessage);
+            setText('modalCloseBtn', d.modalCloseBtn);
+
+            var fullNameEl = document.getElementById('fullName'); if (fullNameEl) fullNameEl.placeholder = d.fullNamePh;
+            var phoneEl = document.getElementById('phoneNumber'); if (phoneEl) phoneEl.placeholder = d.phonePh;
+            var locEl = document.getElementById('targetLocation'); if (locEl) locEl.placeholder = d.locationPh;
+
+            var activeSocialBtn = document.querySelector('.social-btn.theme-bg');
+            var socialInput = document.getElementById('socialContactInput');
+            if (socialInput) {
+                socialInput.placeholder = activeSocialBtn ? getEnterIdPlaceholder(activeSocialBtn.textContent.trim()) : d.socialDefaultPh;
+            }
+
+            var budgetSel = document.getElementById('budgetRange');
+            if (budgetSel) Array.from(budgetSel.options).forEach(function(o,i){ if (d.budget[i] !== undefined) o.textContent = d.budget[i]; });
+            var durSel = document.getElementById('rentalDuration');
+            if (durSel) Array.from(durSel.options).forEach(function(o,i){ if (d.duration[i] !== undefined) o.textContent = d.duration[i]; });
+            var moveSel = document.getElementById('moveInMonth');
+            if (moveSel) Array.from(moveSel.options).forEach(function(o,i){ if (d.month[i] !== undefined) o.textContent = d.month[i]; });
+
+            var consentEl = document.getElementById('consentText');
+            if (consentEl) consentEl.innerHTML = d.consentHTML;
+
+            var hiddenLangInput = document.getElementById('preferredLanguage');
+            if (hiddenLangInput) hiddenLangInput.value = lang;
+
+            document.querySelectorAll('.lang-btn').forEach(function(b){
+                if (b.dataset.lang === lang) { b.classList.add('theme-bg','text-white','border-[#1e4620]'); }
+                else { b.classList.remove('theme-bg','text-white','border-[#1e4620]'); }
+            });
+        }
+
+        function getEnterIdPlaceholder(label) {
+            var d = I18N[currentLang] || I18N.TH;
+            return d.enterIdTemplate.replace('{label}', label);
+        }
+
+        document.querySelectorAll('.lang-btn').forEach(function(b){
+            b.addEventListener('click', function(){ applyLanguage(this.dataset.lang); });
+        });
+
+        applyLanguage('TH');
     </script>
-</body>
-</html>
+
+
+</body></html>
