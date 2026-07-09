@@ -345,10 +345,21 @@
         </div>
     </div>
 
+    <!-- ความยินยอม PDPA -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <p class="text-xs text-gray-500 leading-relaxed mb-2">เราเก็บข้อมูลของคุณเพื่อประกาศทรัพย์สินและติดต่อประสานงานเท่านั้น</p>
+        <div class="flex items-start gap-2">
+            <input type="checkbox" id="consentCheckbox" required class="mt-1 h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-600">
+            <label for="consentCheckbox" class="text-xs text-gray-600 leading-relaxed">
+                ฉันได้อ่านและยินยอมตาม <a href="privacy-policy.html?lang=TH" target="_blank" rel="noopener" class="text-green-700 underline font-medium">นโยบายความเป็นส่วนตัว</a> ก่อนส่งข้อมูล
+            </label>
+        </div>
+    </div>
+
     <!-- Submit -->
     <div class="pt-2 pb-4">
-        <button onclick="validateAndSubmit()" id="btnSubmit"
-            class="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-3.5 px-4 rounded-xl shadow-lg shadow-green-900/20 transition flex items-center justify-center gap-2 text-sm">
+        <button onclick="validateAndSubmit()" id="btnSubmit" disabled
+            class="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-3.5 px-4 rounded-xl shadow-lg shadow-green-900/20 transition flex items-center justify-center gap-2 text-sm opacity-50 cursor-not-allowed">
             ✨ ส่งข้อมูลเข้าคลังทรัพย์
         </button>
         <p id="uploadStatus" class="text-center text-xs text-gray-400 mt-2 hidden">กำลังอัปโหลดรูปภาพ... กรุณารอสักครู่</p>
@@ -372,6 +383,13 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwXhqYs3BO17C-OmIFLWlRslq85nwymLm_sNa2me7bddO-ojbSUePRnbVsMDSaitCU/exec";
 const PHOTO_SLOTS = ['front','living','bed1','bed2','bed3','kitchen'];
 let pendingUploads = 0;
+
+document.getElementById('consentCheckbox').addEventListener('change', function(){
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = !this.checked;
+    btn.classList.toggle('opacity-50', !this.checked);
+    btn.classList.toggle('cursor-not-allowed', !this.checked);
+});
 
 // พิกัดอ้างอิง: สวนอุตสาหกรรม 304 (สำนักงานขาย) ต.ท่าตูม อ.ศรีมหาโพธิ จ.ปราจีนบุรี
 const REF_LAT = 13.9149096;
@@ -492,6 +510,12 @@ function fileToBase64(file) {
 }
 
 async function validateAndSubmit() {
+    const consentCheckboxEl = document.getElementById('consentCheckbox');
+    if (!consentCheckboxEl.checked) {
+        alert('⚠️ กรุณายอมรับนโยบายความเป็นส่วนตัวก่อนส่งข้อมูล');
+        return;
+    }
+
     // validate required fields
     const required = [
         { id: 'property_type',        label: 'ประเภททรัพย์' },
@@ -569,6 +593,9 @@ async function validateAndSubmit() {
         fd.append('owner_name',             document.getElementById('owner_name').value);
         fd.append('owner_phone',            document.getElementById('owner_phone').value);
         fd.append('image_url',              imageUrls);
+        fd.append('consentGiven', 'TRUE');
+        fd.append('consentTimestamp', new Date().toISOString());
+        fd.append('consentPolicyVersion', 'v1.0-2569-07-09');
 
         const res  = await fetch(WEB_APP_URL, { method: 'POST', body: fd });
         const json = await res.json();
@@ -611,6 +638,10 @@ function resetForm() {
         slot.innerHTML = `<span class="text-2xl">📷</span><span class="text-xs text-gray-400 mt-1">แตะเพื่อเพิ่มรูป</span>`;
         document.getElementById('file-' + id).value = '';
     });
+    document.getElementById('consentCheckbox').checked = false;
+    const resetBtn = document.getElementById('btnSubmit');
+    resetBtn.disabled = true;
+    resetBtn.classList.add('opacity-50','cursor-not-allowed');
 }
 </script>
 </body>
