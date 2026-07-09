@@ -55,22 +55,17 @@
 
                 <!-- ชื่อ-นามสกุล -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อ - นามสกุล</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อ - นามสกุล <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-regular fa-user"></i></span>
-                        <input type="text" id="fullName" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="Artit Moungsri">
+                        <input type="text" id="fullName" required class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="ชื่อ นามสกุล">
                     </div>
                 </div>
 
                 <!-- เบอร์โทรศัพท์ (Required) -->
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">หมายเลขโทรศัพท์ <span class="text-red-500">*</span></label>
-                    <div class="flex space-x-2">
-                        <div class="w-24 flex items-center justify-center border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-600">
-                            <img src="https://flagcdn.com/w20/th.png" alt="TH Flag" class="mr-1 w-4 h-3"> +66
-                        </div>
-                        <input type="tel" id="phoneNumber" required class="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="หมายเลขโทรศัพท์ *">
-                    </div>
+                    <input type="tel" id="phoneNumber" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="หมายเลขโทรศัพท์ *">
                 </div>
 
                 <!-- อีเมล -->
@@ -78,28 +73,21 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1">อีเมล</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-regular fa-envelope"></i></span>
-                        <input type="email" id="email" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="artitmuangsri@gmail.com">
+                        <input type="email" id="email" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="example@email.com">
                     </div>
                 </div>
 
-                <!-- WhatsApp / WeChat -->
+                <!-- Social Contact: WhatsApp / WeChat / LINE -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">WhatsApp / WeChat</label>
-                    <div class="flex space-x-2">
-                        <div class="w-24 flex items-center justify-center border border-gray-300 rounded-lg bg-gray-50 text-xs text-gray-500">
-                            โซเชียลต่างชาติ
-                        </div>
-                        <input type="text" id="foreignSocial" class="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="WhatsApp หรือ WeChat ID">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ช่องทางติดต่อเพิ่มเติม (เลือก 1 ช่องทาง)</label>
+                    <div class="grid grid-cols-3 gap-2 mb-2">
+                        <button type="button" data-social="whatsapp" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</button>
+                        <button type="button" data-social="wechat" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition"><i class="fa-brands fa-weixin mr-1"></i>WeChat</button>
+                        <button type="button" data-social="line" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition"><i class="fa-brands fa-line mr-1"></i>LINE</button>
                     </div>
-                </div>
-
-                <!-- LINE ID (ซ่อนอัตโนมัติถ้าเปิดจากบอท LINE เพราะรู้จักผู้ใช้แล้ว) -->
-                <div id="lineIdField">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">LINE ID</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-brands fa-line"></i></span>
-                        <input type="text" id="lineId" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="Line ID">
-                    </div>
+                    <input type="text" id="socialContactInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="เลือกช่องทางด้านบน แล้วกรอก ID">
+                    <input type="hidden" id="foreignSocial">
+                    <input type="hidden" id="lineId">
                 </div>
 
                 <!-- พื้นที่ที่ต้องการเช่า -->
@@ -219,6 +207,34 @@
             document.getElementById('lineConnectedBadge').classList.remove('hidden');
             document.getElementById('lineIdField').classList.add('hidden');
         }
+
+        // Social contact button selector
+        (function(){
+            let selectedSocial = '';
+            const buttons = document.querySelectorAll('.social-btn');
+            const input = document.getElementById('socialContactInput');
+            function syncHidden(){
+                document.getElementById('foreignSocial').value = '';
+                document.getElementById('lineId').value = '';
+                if (selectedSocial === 'line') {
+                    document.getElementById('lineId').value = input.value;
+                } else if (selectedSocial === 'whatsapp') {
+                    document.getElementById('foreignSocial').value = input.value ? ('WhatsApp: ' + input.value) : '';
+                } else if (selectedSocial === 'wechat') {
+                    document.getElementById('foreignSocial').value = input.value ? ('WeChat: ' + input.value) : '';
+                }
+            }
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function(){
+                    selectedSocial = this.dataset.social;
+                    buttons.forEach(b => b.classList.remove('theme-bg','text-white','border-[#1e4620]'));
+                    this.classList.add('theme-bg','text-white','border-[#1e4620]');
+                    input.placeholder = 'กรอก ' + this.textContent.trim() + ' ID';
+                    syncHidden();
+                });
+            });
+            input.addEventListener('input', syncHidden);
+        })();
 
         document.getElementById('leadForm').addEventListener('submit', function(e) {
             e.preventDefault();
