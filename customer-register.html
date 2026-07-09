@@ -54,6 +54,9 @@
 
                 <!-- ชื่อ-นามสกุล -->
                 <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelLanguage">กรุณาเลือกภาษาที่ต้องการ</label><div class="grid grid-cols-4 gap-2" id="langButtonRow"><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="TH">ไทย</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="EN">EN</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="CN">中文</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="JP">日本語</button></div><input type="hidden" id="preferredLanguage" value="TH">
+                    
+                </div><div>
                     <label class="block text-xs font-medium text-gray-600 mb-1" id="labelFullName">ชื่อ - นามสกุล <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-regular fa-user"></i></span>
@@ -143,10 +146,7 @@
                 </div>
 
                 <!-- ภาษาที่ต้องการ -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelLanguage">กรุณาเลือกภาษาที่ต้องการ</label><div class="grid grid-cols-4 gap-2" id="langButtonRow"><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="TH">ไทย</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="EN">EN</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="CN">中文</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="JP">日本語</button></div><input type="hidden" id="preferredLanguage" value="TH">
-                    
-                </div>
+                
 
                 <!-- Toggle บันทึกการค้นหา -->
                 <div class="flex items-center justify-between py-2 border-y border-gray-100 my-2">
@@ -357,6 +357,7 @@
 
         applyLanguage('TH');
     </script>
+
 
 
 </body></html>
