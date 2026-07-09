@@ -78,7 +78,7 @@
                 </div>
 
                 <!-- Social Contact: WhatsApp / WeChat / LINE -->
-                <div id="lineIdField">
+                <div id="socialContactBlock">
                     <label class="block text-xs font-medium text-gray-600 mb-1">ช่องทางติดต่อเพิ่มเติม (เลือก 1 ช่องทาง)</label>
                     <div class="grid grid-cols-3 gap-2 mb-2">
                         <button type="button" data-social="whatsapp" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</button>
@@ -205,7 +205,6 @@
 
         if (lineUserId) {
             document.getElementById('lineConnectedBadge').classList.remove('hidden');
-            document.getElementById('lineIdField').classList.add('hidden');
         }
 
         // Social contact button selector
@@ -281,7 +280,6 @@
                     document.getElementById('leadForm').reset();
                     if (lineUserId) {
                         document.getElementById('lineConnectedBadge').classList.remove('hidden');
-                        document.getElementById('lineIdField').classList.add('hidden');
                     }
                 } else {
                     alert("เกิดข้อผิดพลาดจากระบบ: " + data.message);
