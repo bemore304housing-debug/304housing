@@ -685,7 +685,7 @@ function saveSubmission(data) {
 //  CUSTOMER LEAD (ผู้สนใจเช่า) — Agency ติดต่อกลับเพื่อนัดชม/ทำสัญญา
 // ═════════════════════════════════════════════════════════════
 
-const CUSTOMER_HEADERS = ["timestamp","lineUserId","fullName","phoneNumber","email","foreignSocial","lineId","targetLocation","budgetRange","rentalDuration","moveInMonth","preferredLanguage","saveSearch","status"];
+const CUSTOMER_HEADERS = ["timestamp","lineUserId","fullName","phoneNumber","email","foreignSocial","lineId","targetLocation","budgetRange","rentalDuration","moveInMonth","preferredLanguage","saveSearch","status","assignedTo"];
 
 function saveCustomerLead(data) {
   try {
