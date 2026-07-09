@@ -572,6 +572,8 @@ function notifyAdminNewLead(data, rowNum) {
     (data.lineUserId ? "🔗 เชื่อมต่อผ่าน LINE bot แล้ว (ทักกลับได้ทันที)" : ""),
     "📍 ทำเล: " + (data.targetLocation || "ไม่ระบุ"),
     "💰 งบประมาณ: " + (data.budgetRange || "ไม่ระบุ"),
+    "📅 ระยะเวลาเช่า: " + (data.rentalDuration || "ไม่ระบุ"),
+    "🚚 ต้องการย้ายเข้าเดือน: " + (data.moveInMonth || "ไม่ระบุ"),
     "🌐 ภาษา: " + (data.preferredLanguage || "-"),
     "",
     "➡️ ติดต่อลูกค้าเพื่อนัดหมายดูทรัพย์"
@@ -683,7 +685,7 @@ function saveSubmission(data) {
 //  CUSTOMER LEAD (ผู้สนใจเช่า) — Agency ติดต่อกลับเพื่อนัดชม/ทำสัญญา
 // ═════════════════════════════════════════════════════════════
 
-const CUSTOMER_HEADERS = ["timestamp","lineUserId","fullName","phoneNumber","email","foreignSocial","lineId","targetLocation","budgetRange","preferredLanguage","saveSearch","status"];
+const CUSTOMER_HEADERS = ["timestamp","lineUserId","fullName","phoneNumber","email","foreignSocial","lineId","targetLocation","budgetRange","rentalDuration","moveInMonth","preferredLanguage","saveSearch","status"];
 
 function saveCustomerLead(data) {
   try {
@@ -705,6 +707,8 @@ function saveCustomerLead(data) {
       lineId              : data.lineId              || "",
       targetLocation      : data.targetLocation      || "",
       budgetRange         : data.budgetRange         || "",
+      rentalDuration      : data.rentalDuration      || "",
+      moveInMonth         : data.moveInMonth         || "",
       preferredLanguage   : data.preferredLanguage   || "",
       saveSearch          : data.saveSearch          || "",
       status              : "ใหม่",
