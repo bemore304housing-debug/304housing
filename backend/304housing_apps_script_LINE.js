@@ -664,9 +664,20 @@ function saveSubmission(data) {
     pets_allowed     : data.pets_allowed     || "",
     notes            : data.notes            || "",
     image_url        : data.image_url        || "",
+    consentGiven: data.consentGiven || "",
+    consentTimestamp: data.consentTimestamp || "",
+    consentPolicyVersion: data.consentPolicyVersion || "",
   };
 
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  // ป้องกันข้อมูลหาย: เติม header คอลัมน์ที่ขาดต่อท้ายอัตโนมัติ (เหมือน saveCustomerLead)
+  let headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const REQUIRED_SUB_HEADERS = ["consentGiven","consentTimestamp","consentPolicyVersion"];
+  const missingSubHeaders = REQUIRED_SUB_HEADERS.filter(h => headers.indexOf(h) === -1);
+  if (missingSubHeaders.length > 0) {
+    sheet.getRange(1, headers.length + 1, 1, missingSubHeaders.length).setValues([missingSubHeaders])
+      .setFontWeight("bold").setBackground("#1e4620").setFontColor("#ffffff");
+    headers = headers.concat(missingSubHeaders);
+  }
   const row = headers.map(h => fieldMap.hasOwnProperty(h) ? fieldMap[h] : "");
   sheet.appendRow(row);
 
@@ -685,7 +696,7 @@ function saveSubmission(data) {
 //  CUSTOMER LEAD (ผู้สนใจเช่า) — Agency ติดต่อกลับเพื่อนัดชม/ทำสัญญา
 // ═════════════════════════════════════════════════════════════
 
-const CUSTOMER_HEADERS = ["timestamp","lineUserId","fullName","phoneNumber","email","foreignSocial","lineId","targetLocation","budgetRange","rentalDuration","moveInMonth","preferredLanguage","saveSearch","status","assignedTo"];
+const CUSTOMER_HEADERS = ["timestamp","lineUserId","fullName","phoneNumber","email","foreignSocial","lineId","targetLocation","budgetRange","rentalDuration","moveInMonth","preferredLanguage","saveSearch","consentGiven","consentTimestamp","consentPolicyVersion","status","assignedTo"];
 
 function saveCustomerLead(data) {
   try {
@@ -711,6 +722,9 @@ function saveCustomerLead(data) {
       moveInMonth         : data.moveInMonth         || "",
       preferredLanguage   : data.preferredLanguage   || "",
       saveSearch          : data.saveSearch          || "",
+      consentGiven        : data.consentGiven || "",
+      consentTimestamp    : data.consentTimestamp || "",
+      consentPolicyVersion: data.consentPolicyVersion || "",
       status              : "ใหม่",
     };
 
@@ -991,7 +1005,7 @@ function uploadImage(data) {
 function setupSheets() {
   const ss = SpreadsheetApp.openById(SHEET_ID);
 
-  const subHeaders = ["timestamp","status","property_code","property_type","project_name","address_no","moo","sub_district","district","distance_km","map_url","bedrooms","bathrooms","land_size","area_size","parking","appliances_list","furniture_list","rent_price","accept_foreigner","owner_name","owner_phone","shuttle_bus","pets_allowed","notes","image_url"];
+  const subHeaders = ["timestamp","status","property_code","property_type","project_name","address_no","moo","sub_district","district","distance_km","map_url","bedrooms","bathrooms","land_size","area_size","parking","appliances_list","furniture_list","rent_price","accept_foreigner","owner_name","owner_phone","shuttle_bus","pets_allowed","notes","image_url","consentGiven","consentTimestamp","consentPolicyVersion"];
   const subSheet = getOrCreateSheet(ss, "submissions");
   subSheet.getRange(1, 1, 1, subHeaders.length).setValues([subHeaders]).setFontWeight("bold").setBackground("#1e4620").setFontColor("#ffffff");
 
@@ -1042,7 +1056,7 @@ function migrateSchemaAndData() {
   }
 
   // ── 2. ล้าง submissions และตั้ง header ชุดใหม่ ──────────────
-  const subHeaders = ["timestamp","status","property_code","property_type","project_name","address_no","moo","sub_district","district","distance_km","map_url","bedrooms","bathrooms","land_size","area_size","parking","appliances_list","furniture_list","rent_price","accept_foreigner","owner_name","owner_phone","shuttle_bus","pets_allowed","notes","image_url"];
+  const subHeaders = ["timestamp","status","property_code","property_type","project_name","address_no","moo","sub_district","district","distance_km","map_url","bedrooms","bathrooms","land_size","area_size","parking","appliances_list","furniture_list","rent_price","accept_foreigner","owner_name","owner_phone","shuttle_bus","pets_allowed","notes","image_url","consentGiven","consentTimestamp","consentPolicyVersion"];
   subSheetOld.clear();
   subSheetOld.getRange(1, 1, 1, subHeaders.length).setValues([subHeaders]).setFontWeight("bold").setBackground("#1e4620").setFontColor("#ffffff");
 
