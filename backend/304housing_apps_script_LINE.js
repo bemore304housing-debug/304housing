@@ -714,7 +714,16 @@ function saveCustomerLead(data) {
       status              : "ใหม่",
     };
 
-    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    // ป้องกันข้อมูลหาย: ถ้าชีตเดิมมีอยู่แล้วก่อนเพิ่ม field ใหม่ (header แถวแรกไม่ครบ)
+    // ให้เติม header คอลัมน์ที่ขาดต่อท้ายอัตโนมัติ แทนที่จะทิ้งข้อมูลนั้นไปเงียบๆ
+    let headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const missingHeaders = CUSTOMER_HEADERS.filter(h => headers.indexOf(h) === -1);
+    if (missingHeaders.length > 0) {
+      sheet.getRange(1, headers.length + 1, 1, missingHeaders.length).setValues([missingHeaders])
+        .setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
+      headers = headers.concat(missingHeaders);
+    }
+
     const row = headers.map(h => fieldMap.hasOwnProperty(h) ? fieldMap[h] : "");
     sheet.appendRow(row);
 
