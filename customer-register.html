@@ -20,6 +20,8 @@
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #1e4620; }
         input:checked + .slider:before { transform: translateX(20px); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5);
+                         display: flex; align-items: center; justify-content: center; z-index: 50; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
@@ -34,15 +36,21 @@
     <!-- Main Container -->
     <main class="flex-grow flex items-center justify-center p-4">
         <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md border border-gray-100">
-            
+
             <div class="text-center mb-6">
-                <h2 class="text-lg font-medium text-gray-800">สนใจเช่าอสังหาริมทรัพย์ในประเทศไทย?</h2>
-                <p class="text-sm text-gray-500 mt-1">สอบถามผู้เชี่ยวชาญของเรา!</p>
+                <h2 class="text-lg font-medium text-gray-800">สนใจเช่าที่พักรอบนิคม 304?</h2>
+                <p class="text-sm text-gray-500 mt-1">ทีมงานจะติดต่อกลับเพื่อนัดหมายดูทรัพย์ที่ตรงใจ</p>
+            </div>
+
+            <!-- Badge: เชื่อมต่อผ่าน LINE แล้ว (แสดงเมื่อเปิดจากบอท LINE) -->
+            <div id="lineConnectedBadge" class="hidden mb-4 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                <i class="fa-brands fa-line text-green-700"></i>
+                <span class="text-xs text-green-800 font-medium">เชื่อมต่อผ่าน LINE แล้ว — ทีมงานทักกลับได้ทันที</span>
             </div>
 
             <!-- Form Start -->
             <form id="leadForm" class="space-y-4">
-                
+
                 <!-- ชื่อ-นามสกุล -->
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อ - นามสกุล</label>
@@ -83,8 +91,8 @@
                     </div>
                 </div>
 
-                <!-- LINE ID -->
-                <div>
+                <!-- LINE ID (ซ่อนอัตโนมัติถ้าเปิดจากบอท LINE เพราะรู้จักผู้ใช้แล้ว) -->
+                <div id="lineIdField">
                     <label class="block text-xs font-medium text-gray-600 mb-1">LINE ID</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-brands fa-line"></i></span>
@@ -139,13 +147,26 @@
                     เมื่อคลิก "ดำเนินการ" ฉันยืนยันว่าฉันได้อ่านและเข้าใจ <a href="#" class="text-amber-600 underline">นโยบายความเป็นส่วนตัว</a> แล้ว และยินยอมให้ Be More Group ติดต่อฉันเพื่อแจ้งข้อมูลอัปเดตเกี่ยวกับทรัพย์สินและข้อมูลที่เกี่ยวข้อง
                 </div>
 
-                <button type="submit" class="w-full theme-bg hover:bg-[#153216] text-white font-medium py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center">
+                <button type="submit" id="btnSubmit" class="w-full theme-bg hover:bg-[#153216] text-white font-medium py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center">
                     <span>ดำเนินการ</span> <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
                 </button>
             </form>
             <!-- Form End -->
         </div>
     </main>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-2xl p-6 mx-6 shadow-2xl text-center max-w-sm">
+            <div class="text-5xl mb-3">🎉</div>
+            <h2 class="text-lg font-bold text-gray-800 mb-1">ลงทะเบียนสำเร็จ!</h2>
+            <p class="text-sm text-gray-500 mb-4">ทีมงานจะติดต่อกลับเพื่อนัดหมายดูทรัพย์ที่ตรงใจโดยเร็วที่สุด</p>
+            <button onclick="document.getElementById('successModal').classList.add('hidden')"
+                class="w-full theme-bg text-white font-medium py-2.5 rounded-xl text-sm">
+                ปิดหน้าต่าง
+            </button>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-gray-100 text-center py-3 text-xs text-gray-400 border-t border-gray-200">
@@ -154,39 +175,63 @@
 
     <!-- JavaScript Handling Backend Connection -->
     <script>
-        // เปลี่ยนเป็น URL ของ Web App Google Apps Script ที่ Deploy แบบ Anyone จริงๆ
-        const BACKEND_API_URL = "https://script.google.com/macros/s/---YOUR-SCRIPT-ID---/exec";
+        // Web App URL เดียวกับที่ intake-form.html ใช้จริง (Apps Script deploy แล้ว)
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwXhqYs3BO17C-OmIFLWlRslq85nwymLm_sNa2me7bddO-ojbSUePRnbVsMDSaitCU/exec";
+
+        // อ่าน lineUserId จาก URL (ส่งมาจากปุ่มในบอท LINE) — ถ้ามี แปลว่าเรารู้จักผู้ใช้แล้ว
+        const urlParams = new URLSearchParams(window.location.search);
+        const lineUserId = urlParams.get('lineUserId') || '';
+
+        if (lineUserId) {
+            document.getElementById('lineConnectedBadge').classList.remove('hidden');
+            document.getElementById('lineIdField').classList.add('hidden');
+        }
 
         document.getElementById('leadForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const submitButton = this.querySelector('button[type="submit"]');
+
+            const requiredFields = [
+                { id: 'phoneNumber', label: 'หมายเลขโทรศัพท์' },
+                { id: 'budgetRange', label: 'ช่วงงบประมาณ' },
+            ];
+            for (const f of requiredFields) {
+                const el = document.getElementById(f.id);
+                if (!el.value.trim()) {
+                    alert(`⚠️ กรุณากรอก "${f.label}"`);
+                    el.focus();
+                    return;
+                }
+            }
+
+            const submitButton = document.getElementById('btnSubmit');
             submitButton.disabled = true;
             submitButton.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> กำลังบันทึกข้อมูล...';
 
-            // รวบรวม Object ข้อมูลส่งเข้า API
-            const payload = {
-                action: "save_customer_lead",
-                fullName: document.getElementById('fullName').value,
-                phoneNumber: document.getElementById('phoneNumber').value,
-                email: document.getElementById('email').value,
-                foreignSocial: document.getElementById('foreignSocial').value,
-                lineId: document.getElementById('lineId').value,
-                targetLocation: document.getElementById('targetLocation').value,
-                budgetRange: document.getElementById('budgetRange').value,
-                preferredLanguage: document.getElementById('preferredLanguage').value,
-                saveSearch: document.getElementById('saveSearchToggle').checked ? "เปิด" : "ปิด"
-            };
+            // ใช้ FormData (แบบเดียวกับ intake-form.html ที่ยืนยันแล้วว่าทำงานได้จริงกับ
+            // Google Apps Script Web App — หลีกเลี่ยงปัญหา CORS preflight ของ JSON body)
+            const fd = new FormData();
+            fd.append('action', 'save_customer_lead');
+            fd.append('lineUserId', lineUserId);
+            fd.append('fullName', document.getElementById('fullName').value);
+            fd.append('phoneNumber', document.getElementById('phoneNumber').value);
+            fd.append('email', document.getElementById('email').value);
+            fd.append('foreignSocial', document.getElementById('foreignSocial').value);
+            fd.append('lineId', document.getElementById('lineId').value);
+            fd.append('targetLocation', document.getElementById('targetLocation').value);
+            fd.append('budgetRange', document.getElementById('budgetRange').value);
+            fd.append('preferredLanguage', document.getElementById('preferredLanguage').value);
+            fd.append('saveSearch', document.getElementById('saveSearchToggle').checked ? "เปิด" : "ปิด");
 
-            fetch(BACKEND_API_URL, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            })
+            fetch(WEB_APP_URL, { method: "POST", body: fd })
             .then(res => res.json())
             .then(data => {
-                if(data.status === "success") {
-                    alert("บันทึกข้อมูลและส่งเรื่องให้ผู้เชี่ยวชาญเรียบร้อยแล้ว ทีมงานจะติดต่อกลับโดยเร็วที่สุดครับ");
+                if (data.status === "success") {
+                    document.getElementById('successModal').classList.remove('hidden');
                     document.getElementById('leadForm').reset();
+                    if (lineUserId) {
+                        document.getElementById('lineConnectedBadge').classList.remove('hidden');
+                        document.getElementById('lineIdField').classList.add('hidden');
+                    }
                 } else {
                     alert("เกิดข้อผิดพลาดจากระบบ: " + data.message);
                 }
