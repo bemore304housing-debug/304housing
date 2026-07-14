@@ -262,6 +262,12 @@ function handleMessage(event) {
     return;
   }
 
+  // ── ถอนความยินยอม (PDPA มาตรา 19) ──
+  if (matchKeyword(text, ["ถอนความยินยอม", "ยกเลิกความยินยอม", "ลบข้อมูลของฉัน", "withdraw consent", "withdraw"])) {
+    pushLine(userId, [flexWithdrawConsentConfirm()]);
+    return;
+  }
+
   // ── Default: แสดงเมนูหลัก ──
   pushLine(userId, [flexMainMenu(userId)]);
 }
@@ -281,6 +287,11 @@ function handlePostback(event) {
     pushLine(userId, [{
       type: "text", text: "📞 ติดต่อทีมงาน\n📱 LINE: @304housingbybemore\n☎️ 08X-XXX-XXXX"
     }]);
+    return;
+  }
+  if (data === "action=withdraw_consent_confirm") { withdrawConsent(userId); return; }
+  if (data === "action=withdraw_consent_cancel") {
+    pushLine(userId, [{ type: "text", text: "ยกเลิกคำขอแล้วครับ ข้อมูลของท่านยังคงถูกเก็บและใช้งานตามปกติ 🙏" }]);
     return;
   }
 }
@@ -492,6 +503,42 @@ function flexPriceInfo() {
           priceRow("บ้านเดี่ยว",          "15,000 – 30,000"),
           { type: "separator" },
           { type: "text", text: "* ราคาเป็นค่าประมาณ ขึ้นกับระยะทางและสิ่งอำนวยความสะดวก", wrap: true, size: "xs", color: "#aaaaaa" }
+        ]
+      }
+    }
+  };
+}
+
+function flexWithdrawConsentConfirm() {
+  return {
+    type: "flex",
+    altText: "ยืนยันการถอนความยินยอม (PDPA)",
+    contents: {
+      type: "bubble",
+      header: {
+        type: "box", layout: "vertical", backgroundColor: "#B91C1C",
+        contents: [
+          { type: "text", text: "⚠️ ถอนความยินยอม (PDPA)", color: "#ffffff", weight: "bold", size: "md" }
+        ]
+      },
+      body: {
+        type: "box", layout: "vertical", spacing: "md",
+        contents: [
+          { type: "text", text: "ท่านต้องการถอนความยินยอมการเก็บ ใช้ และเปิดเผยข้อมูลส่วนบุคคลของท่านใช่หรือไม่?", wrap: true, size: "sm" },
+          { type: "text", text: "หากยืนยัน ทีมงานจะหยุดจับคู่ทรัพย์สินและติดต่อท่านเพื่อวัตถุประสงค์ทางการตลาด โดยข้อมูลที่บันทึกไว้ก่อนหน้าจะถูกทำเครื่องหมายว่าถอนความยินยอมแล้ว", wrap: true, size: "xs", color: "#888888" }
+        ]
+      },
+      footer: {
+        type: "box", layout: "vertical", spacing: "sm",
+        contents: [
+          {
+            type: "button", style: "primary", color: "#B91C1C",
+            action: { type: "postback", label: "ยืนยันถอนความยินยอม", data: "action=withdraw_consent_confirm" }
+          },
+          {
+            type: "button", style: "secondary",
+            action: { type: "postback", label: "ยกเลิก", data: "action=withdraw_consent_cancel" }
+          }
         ]
       }
     }
@@ -752,6 +799,74 @@ function saveCustomerLead(data) {
   } catch (err) {
     return jsonResponse({ status: "error", message: err.toString() });
   }
+}
+
+// ── ถอนความยินยอม (PDPA มาตรา 19) — ผู้ใช้ยกเลิกความยินยอมผ่าน LINE OA ──
+function withdrawConsent(userId) {
+  if (!userId) return;
+  try {
+    const ss    = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = getOrCreateSheet(ss, "customers");
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) {
+      pushLine(userId, [{ type: "text", text: "ไม่พบข้อมูลของท่านในระบบครับ หากท่านเคยลงทะเบียนด้วยช่องทางอื่น กรุณาติดต่อทีมงานโดยตรง" }]);
+      return;
+    }
+
+    let headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const EXTRA_HEADERS = ["consentWithdrawn", "consentWithdrawnTimestamp"];
+    const missingHeaders = EXTRA_HEADERS.filter(h => headers.indexOf(h) === -1);
+    if (missingHeaders.length > 0) {
+      sheet.getRange(1, headers.length + 1, 1, missingHeaders.length).setValues([missingHeaders])
+        .setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
+      headers = headers.concat(missingHeaders);
+    }
+
+    const lineUserIdCol  = headers.indexOf("lineUserId") + 1;
+    const statusCol      = headers.indexOf("status") + 1;
+    const withdrawnCol   = headers.indexOf("consentWithdrawn") + 1;
+    const withdrawnTsCol = headers.indexOf("consentWithdrawnTimestamp") + 1;
+    if (lineUserIdCol === 0) return;
+
+    const dataRange = sheet.getRange(2, 1, lastRow - 1, headers.length).getValues();
+    const now = new Date();
+    let matched = 0;
+
+    dataRange.forEach((row, i) => {
+      if (row[lineUserIdCol - 1] === userId) {
+        matched++;
+        const r = i + 2;
+        if (statusCol > 0)      sheet.getRange(r, statusCol).setValue("ถอนความยินยอม").setBackground("#FECACA");
+        if (withdrawnCol > 0)   sheet.getRange(r, withdrawnCol).setValue(true);
+        if (withdrawnTsCol > 0) sheet.getRange(r, withdrawnTsCol).setValue(now);
+      }
+    });
+
+    if (matched === 0) {
+      pushLine(userId, [{ type: "text", text: "ไม่พบข้อมูลของท่านในระบบครับ หากท่านเคยลงทะเบียนด้วยช่องทางอื่น กรุณาติดต่อทีมงานโดยตรง" }]);
+      return;
+    }
+
+    pushLine(userId, [{
+      type: "text",
+      text: "✅ รับทราบการถอนความยินยอมแล้วครับ\n\nทีมงานจะหยุดจับคู่ทรัพย์สินและติดต่อท่านเพื่อวัตถุประสงค์ทางการตลาด ตั้งแต่บัดนี้เป็นต้นไป\n\nหากต้องการลงทะเบียนใหม่ในอนาคต สามารถทักแชทนี้ได้ทุกเมื่อครับ 🙏"
+    }]);
+
+    notifyAdminConsentWithdrawn(userId, matched);
+
+  } catch (err) {
+    Logger.log("withdrawConsent error: " + err.toString());
+  }
+}
+
+// แจ้ง Admin Group เมื่อมีผู้ถอนความยินยอม (PDPA มาตรา 19)
+function notifyAdminConsentWithdrawn(userId, rowCount) {
+  const groupId = PropertiesService.getScriptProperties().getProperty("ADMIN_LINE_GROUP_ID");
+  if (!groupId || !LINE_TOKEN()) return;
+  pushLine(groupId, [{
+    type: "text",
+    text: "⚠️ มีลูกค้าถอนความยินยอม (PDPA มาตรา 19)\n\n🔗 LINE User ID: " + userId + "\n📋 จำนวนแถวที่อัปเดต: " + rowCount + "\n\n➡️ กรุณาหยุดติดต่อ/จับคู่ทรัพย์สินให้ลูกค้ารายนี้"
+  }]);
 }
 
 // สร้าง URL ฟอร์มลงทะเบียนผู้เช่า พร้อมแนบ lineUserId (ถ้ามี) เพื่อให้ฟอร์มรู้จักผู้ใช้อัตโนมัติ
