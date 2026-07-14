@@ -481,7 +481,7 @@ function flexSearchCard() {
         type: "box", layout: "vertical",
         contents: [{
           type: "button", style: "primary", color: "#1e4620",
-          action: { type: "uri", label: "ดูรายการทรัพย์ →", uri: INTAKE_FORM_URL.replace("intake-form", "customer-search") }
+          action: { type: "uri", label: "ดูรายการทรัพย์ →", uri: INTAKE_FORM_URL.replace("intake-form", "property-search") }
         }]
       }
     }
@@ -633,7 +633,6 @@ function notifyAdminNewLead(data, rowNum) {
 // Push แจ้งเจ้าของ LINE เมื่ออนุมัติทรัพย์
 function notifyOwnerApproved(ownerUserId, propertyCode, propertyType) {
   if (!ownerUserId || !LINE_TOKEN()) return;
-  replyLine(null, []); // ไม่ใช้ reply ตรงนี้
   pushLine(ownerUserId, [{
     type: "flex",
     altText: "ทรัพย์ของคุณได้รับการอนุมัติแล้ว! 🎉",
@@ -1345,8 +1344,11 @@ function getDashboard() {
     let expiringCount = 0, expiringList = [];
     const ctSheet = ss.getSheetByName("contracts");
     if (ctSheet && ctSheet.getLastRow() > 1) {
-      const headers = ctSheet.getRange(1, 1, 1, 8).getValues()[0];
-      const rows    = ctSheet.getRange(2, 1, ctSheet.getLastRow() - 1, 8).getValues();
+      // ใช้ getLastColumn() แทนการ hardcode จำนวนคอลัมน์ — ของเดิม hardcode ไว้ที่ 8
+      // ทำให้หา "expiry_date" (คอลัมน์ที่ 12) ไม่เจอ และฟีเจอร์แจ้งเตือนสัญญาใกล้หมดอายุไม่ทำงานเลย
+      const ctLastCol = ctSheet.getLastColumn();
+      const headers = ctSheet.getRange(1, 1, 1, ctLastCol).getValues()[0];
+      const rows    = ctSheet.getRange(2, 1, ctSheet.getLastRow() - 1, ctLastCol).getValues();
       const now     = new Date();
       const limit   = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
       rows.forEach(r => {
@@ -1430,9 +1432,10 @@ function setupSheets() {
   const propSheet = getOrCreateSheet(ss, "properties");
   propSheet.getRange(1, 1, 1, propHeaders.length).setValues([propHeaders]).setFontWeight("bold").setBackground("#1a5276").setFontColor("#ffffff");
 
-  const ctHeaders = ["contract_code","property_code","tenant_name","tenant_phone","tenant_id_number","tenant_nationality","tenant_address","owner_name","owner_phone","start_date","expiry_date","rent_amount","payment_due_day","security_deposit","advance_rent","commission_rate","commission_amount","commission_status","commission_paid_date","status","notes","createdAt","createdBy"];
+  // ใช้ CONTRACT_HEADERS (ประกาศไว้ด้านบน) เป็น single source of truth — ของเดิมมี array
+  // แยกต่างหากที่ไม่มี owner_address/bank_*/witness_name ทำให้ schema เพี้ยนไปจากที่ saveContract() ใช้จริง
   const ctSheet = getOrCreateSheet(ss, "contracts");
-  ctSheet.getRange(1, 1, 1, ctHeaders.length).setValues([ctHeaders]).setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
+  ctSheet.getRange(1, 1, 1, CONTRACT_HEADERS.length).setValues([CONTRACT_HEADERS]).setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
 
   const custSheet = getOrCreateSheet(ss, "customers");
   custSheet.getRange(1, 1, 1, CUSTOMER_HEADERS.length).setValues([CUSTOMER_HEADERS]).setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
@@ -1596,4 +1599,43 @@ function priceRow(label, price) {
       { type: "text", text: price + " บ./ด.", size: "sm", color: "#1e4620", weight: "bold", align: "end", flex: 2 }
     ]
   };
+}
+
+
+// ═════════════════════════════════════════════════════════════
+//  DIAGNOSTIC — one-time debug utilities used while wiring up the
+//  contract PDF templates (run manually from the Editor, never
+//  invoked by doGet/doPost/triggers). Kept here to mirror the
+//  live Apps Script project exactly.
+// ═════════════════════════════════════════════════════════════
+
+function diagContractTemplates() {
+  const folder = DriveApp.getFolderById("1S-HD0ek-N6wFNex1fWgI0IRr2PszRyRf");
+  const removed = [];
+  ["E2E-TEST-01_commission", "E2E-TEST-01_lease_tp", "E2E-TEST-01_proud",
+   "E2E-TEST-01_commission.pdf", "E2E-TEST-01_lease_tp.pdf", "E2E-TEST-01_proud.pdf"].forEach(function(name){
+    const it = folder.getFilesByName(name);
+    while (it.hasNext()) { const f = it.next(); f.setTrashed(true); removed.push(name); }
+  });
+  Logger.log(JSON.stringify(removed));
+  return removed;
+}
+
+
+function diagContractTemplates2() {
+  function slice(text, anchor, before, after) {
+    const i = text.indexOf(anchor);
+    if (i === -1) return "ANCHOR_NOT_FOUND: " + anchor;
+    return text.substring(Math.max(0, i - before), Math.min(text.length, i + anchor.length + after));
+  }
+  const l = DocumentApp.openById(CONTRACT_TEMPLATE_IDS.lease_tp).getBody().getText();
+  const p = DocumentApp.openById(CONTRACT_TEMPLATE_IDS.proud).getBody().getText();
+  const out = {
+    lease_owner_ctx: slice(l, "ฝ่ายหนึ่ง", 60, 15),
+    lease_tenant_ctx: slice(l, "อีกฝ่ายหนึ่ง", 60, 15),
+    proud_tenant_en_ctx: slice(p, "Soi", 60, 100),
+    proud_owner_en_full: slice(p, "Ratchadaphisek Road", 60, 90),
+  };
+  Logger.log(JSON.stringify(out, null, 2));
+  return out;
 }
