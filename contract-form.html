@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="th"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกสัญญาเช่า - 304 Housing by Be More (Admin)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+        .theme-bg { background-color: #1e4620; }
+        .theme-text { color: #1e4620; }
+        .theme-border:focus { border-color: #1e4620; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5);
+                         display: flex; align-items: center; justify-content: center; z-index: 50; }
+        .hidden { display: none !important; }
+        .section-title { font-size: 12px; font-weight: 600; color: #1e4620; text-transform: uppercase; letter-spacing: .03em; margin-top: 4px; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col justify-between">
+
+    <header class="theme-bg text-white py-4 px-6 shadow-md text-center">
+        <h1 class="text-xl font-semibold tracking-wide">304 Housing by Be More</h1>
+        <p class="text-xs opacity-80 mt-1">บันทึกสัญญาเช่า + คอมมิชชั่น (สำหรับ Admin เท่านั้น)</p>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-lg border border-gray-100">
+
+            <div class="mb-5">
+                <h2 class="text-lg font-medium text-gray-800">เพิ่มสัญญาเช่าใหม่</h2>
+                <p class="text-sm text-gray-500 mt-1">กรอกหลังจากลูกค้าเซ็นสัญญาและชำระเงินประกัน/ค่าเช่าล่วงหน้าให้เจ้าของบ้านเรียบร้อยแล้ว</p>
+                <div class="mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800">
+                    <i class="fa-solid fa-circle-info mr-1"></i> ต่อสัญญาใหม่ทุกปี ให้กรอกเป็นสัญญาใหม่ 1 แถวเสมอ (อย่าแก้ทับแถวเดิม) แนะนำตั้งรหัสสัญญาแบบ <code>TP-0102-Y1</code>, <code>TP-0102-Y2</code>
+                </div>
+            </div>
+
+            <form id="contractForm" class="space-y-4">
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">รหัสสัญญา <span class="text-red-500">*</span></label>
+                    <input type="text" id="contract_code" placeholder="เช่น TP-0102-Y1" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">รหัสทรัพย์ <span class="text-red-500">*</span></label>
+                    <input type="text" id="property_code" placeholder="เช่น RT-260708-004" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1" required>
+                </div>
+
+                <p class="section-title border-t border-gray-100 pt-3">ข้อมูลผู้เช่า</p>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อ-นามสกุลผู้เช่า <span class="text-red-500">*</span></label>
+                    <input type="text" id="tenant_name" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">เบอร์โทรผู้เช่า</label>
+                        <input type="text" id="tenant_phone" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">สัญชาติ</label>
+                        <input type="text" id="tenant_nationality" value="ไทย" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">เลขบัตรประชาชน / พาสปอร์ต</label>
+                    <input type="text" id="tenant_id_number" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    <p class="text-[11px] text-gray-400 mt-1"><i class="fa-solid fa-shield-halved mr-1"></i>ข้อมูลอ่อนไหวตาม PDPA ใช้เพื่อระบุตัวตนในสัญญาเท่านั้น</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ที่อยู่ผู้เช่า</label>
+                    <textarea id="tenant_address" rows="2" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"></textarea>
+                </div>
+
+                <p class="section-title border-t border-gray-100 pt-3">ข้อมูลผู้ให้เช่า (เจ้าของบ้าน)</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อ-นามสกุลเจ้าของบ้าน</label>
+                        <input type="text" id="owner_name" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">เบอร์โทรเจ้าของบ้าน</label>
+                        <input type="text" id="owner_phone" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                </div>
+
+                <p class="section-title border-t border-gray-100 pt-3">เงื่อนไขสัญญา</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">วันเริ่มสัญญา <span class="text-red-500">*</span></label>
+                        <input type="date" id="start_date" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">วันสิ้นสุดสัญญา <span class="text-red-500">*</span></label>
+                        <input type="date" id="expiry_date" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ค่าเช่า/เดือน (บาท) <span class="text-red-500">*</span></label>
+                        <input type="number" id="rent_amount" min="0" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ชำระทุกวันที่ (1-31)</label>
+                        <input type="number" id="payment_due_day" min="1" max="31" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                </div>
+
+                <p class="section-title border-t border-gray-100 pt-3">เงินที่รับตอนเซ็นสัญญา</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">เงินประกัน (บาท)</label>
+                        <input type="number" id="security_deposit" min="0" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ค่าเช่าล่วงหน้า (บาท)</label>
+                        <input type="number" id="advance_rent" min="0" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                </div>
+
+                <p class="section-title border-t border-gray-100 pt-3">ค่าคอมมิชชั่น (เจ้าของบ้านจ่ายให้ Be More)</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">อัตราคอมมิชชั่น</label>
+                        <input type="text" id="commission_rate" placeholder="เช่น 1 เดือน / 0.5 เดือน / 50%" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ยอดคอมมิชชั่น (บาท)</label>
+                        <input type="number" id="commission_amount" min="0" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">สถานะจ่ายคอมมิชชั่น</label>
+                        <select id="commission_status" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 bg-white">
+                            <option value="ยังไม่จ่าย">ยังไม่จ่าย</option>
+                            <option value="จ่ายแล้ว">จ่ายแล้ว</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">วันที่จ่ายคอมมิชชั่น</label>
+                        <input type="date" id="commission_paid_date" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                </div>
+
+                <p class="section-title border-t border-gray-100 pt-3">อื่นๆ</p>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">สถานะสัญญา</label>
+                    <select id="status" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 bg-white">
+                        <option value="ใช้งานอยู่">ใช้งานอยู่</option>
+                        <option value="หมดอายุ">หมดอายุ</option>
+                        <option value="ยกเลิก">ยกเลิก</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">หมายเหตุ</label>
+                    <textarea id="notes" rows="2" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อ Admin ผู้บันทึก</label>
+                    <input type="text" id="createdBy" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                </div>
+
+                <button type="submit" id="btnSubmit" class="w-full theme-bg text-white font-medium py-3 rounded-xl text-sm mt-2 hover:opacity-90 transition">
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> บันทึกสัญญา
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <div id="successModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-2xl p-6 mx-6 shadow-2xl text-center max-w-sm">
+            <div class="text-5xl mb-3">✅</div>
+            <h2 class="text-lg font-bold text-gray-800 mb-1">บันทึกสัญญาเรียบร้อย</h2>
+            <p class="text-sm text-gray-500 mb-4">ระบบแจ้งเตือนทีมงานผ่าน LINE Group แล้ว</p>
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('successModal').classList.add('hidden')" class="flex-1 border border-gray-300 text-gray-600 font-medium py-2.5 rounded-xl text-sm">
+                    กรอกต่อ
+                </button>
+                <a href="admin-dashboard.html" class="flex-1 theme-bg text-white font-medium py-2.5 rounded-xl text-sm">
+                    กลับแดชบอร์ด
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-100 text-center py-3 text-xs text-gray-400 border-t border-gray-200">
+        © 2026 Be More Group. All Rights Reserved.
+    </footer>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwXhqYs3BO17C-OmIFLWlRslq85nwymLm_sNa2me7bddO-ojbSUePRnbVsMDSaitCU/exec";
+
+        document.getElementById('contractForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const requiredFields = ['contract_code', 'property_code', 'tenant_name', 'start_date', 'expiry_date', 'rent_amount'];
+            for (const id of requiredFields) {
+                const el = document.getElementById(id);
+                if (!el.value.trim()) {
+                    alert('กรุณากรอก "' + el.previousElementSibling.textContent.replace('*','').trim() + '"');
+                    el.focus();
+                    return;
+                }
+            }
+
+            const submitButton = document.getElementById('btnSubmit');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> กำลังบันทึก...';
+
+            const fd = new FormData();
+            fd.append('action', 'save_contract');
+            const fieldIds = ['contract_code','property_code','tenant_name','tenant_phone','tenant_id_number',
+                'tenant_nationality','tenant_address','owner_name','owner_phone','start_date','expiry_date',
+                'rent_amount','payment_due_day','security_deposit','advance_rent','commission_rate',
+                'commission_amount','commission_status','commission_paid_date','status','notes','createdBy'];
+            fieldIds.forEach(id => fd.append(id, document.getElementById(id).value));
+
+            fetch(WEB_APP_URL, { method: "POST", body: fd })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    document.getElementById('successModal').classList.remove('hidden');
+                    document.getElementById('contractForm').reset();
+                    document.getElementById('tenant_nationality').value = 'ไทย';
+                } else throw new Error(data.message || 'บันทึกไม่สำเร็จ');
+            })
+            .catch(err => {
+                alert('❌ บันทึกไม่สำเร็จ: ' + err.message);
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fa-solid fa-floppy-disk mr-1"></i> บันทึกสัญญา';
+            });
+        });
+    </script>
+</body>
+</html>
