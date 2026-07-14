@@ -249,7 +249,7 @@ function renderQueue(submissions) {
                 <span class="font-normal text-gray-400">${s.owner_phone || ''}</span>
             </td>
             <td class="p-3">${s.property_type || '—'}</td>
-            <td class="p-3 font-mono">${s.distance_to_industrial || '—'} km</td>
+            <td class="p-3 font-mono">${s.distance_km || '—'} km</td>
             <td class="p-3 font-bold text-green-700">
                 ${s.rent_price ? Number(s.rent_price).toLocaleString() + ' /ด.' : '—'}
             </td>
