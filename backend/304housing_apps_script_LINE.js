@@ -875,7 +875,7 @@ function notifyAdminConsentWithdrawn(userId, rowCount) {
 //  CONTRACT (สัญญาเช่า + คอมมิชชั่น) — Admin กรอกหลังปิดดีล
 // ═════════════════════════════════════════════════════════════
 
-const CONTRACT_HEADERS = ["contract_code","property_code","tenant_name","tenant_phone","tenant_id_number","tenant_nationality","tenant_address","owner_name","owner_phone","start_date","expiry_date","rent_amount","payment_due_day","security_deposit","advance_rent","commission_rate","commission_amount","commission_status","commission_paid_date","status","notes","createdAt","createdBy"];
+const CONTRACT_HEADERS = ["contract_code","property_code","tenant_name","tenant_phone","tenant_id_number","tenant_nationality","tenant_address","owner_name","owner_phone","owner_address","start_date","expiry_date","rent_amount","payment_due_day","security_deposit","advance_rent","commission_rate","commission_amount","commission_status","commission_paid_date","bank_name","bank_branch","bank_account_number","bank_account_name","witness_name","status","notes","createdAt","createdBy"];
 
 function saveContract(data) {
   try {
@@ -897,6 +897,7 @@ function saveContract(data) {
       tenant_address        : data.tenant_address        || "",
       owner_name             : data.owner_name             || "",
       owner_phone            : data.owner_phone            || "",
+      owner_address          : data.owner_address          || "",
       start_date             : data.start_date             || "",
       expiry_date            : data.expiry_date            || "",
       rent_amount            : data.rent_amount            || "",
@@ -907,6 +908,11 @@ function saveContract(data) {
       commission_amount      : data.commission_amount      || "",
       commission_status      : data.commission_status      || "ยังไม่จ่าย",
       commission_paid_date   : data.commission_paid_date   || "",
+      bank_name              : data.bank_name              || "",
+      bank_branch            : data.bank_branch            || "",
+      bank_account_number    : data.bank_account_number    || "",
+      bank_account_name      : data.bank_account_name      || "",
+      witness_name           : data.witness_name           || "",
       status                 : data.status                 || "ใช้งานอยู่",
       notes                  : data.notes                  || "",
       createdAt               : new Date(),
@@ -929,7 +935,14 @@ function saveContract(data) {
 
     notifyAdminNewContract(fieldMap, lastRow);
 
-    return jsonResponse({ status: "success", message: "บันทึกสัญญาเรียบร้อย", row: lastRow });
+    let pdfUrls = {};
+    try {
+      pdfUrls = generateContractPDFs_(fieldMap);
+    } catch (pdfErr) {
+      pdfUrls = { error: pdfErr.toString() };
+    }
+
+    return jsonResponse({ status: "success", message: "บันทึกสัญญาเรียบร้อย", row: lastRow, pdfUrls: pdfUrls });
 
   } catch (err) {
     return jsonResponse({ status: "error", message: err.toString() });
@@ -955,6 +968,209 @@ function notifyAdminNewContract(data, rowNum) {
 
   pushLine(groupId, [{ type: "text", text: msg }]);
 }
+
+// ═════════════════════════════════════════════════════════════
+//  PDF สัญญา — auto-generate จาก template ใน Google Drive
+//  (ตั้งค่าครั้งเดียว: อัปโหลด .docx 3 ไฟล์ -> Save as Google Docs -> ใส่ Doc ID ด้านล่าง)
+// ═════════════════════════════════════════════════════════════
+
+const CONTRACT_TEMPLATE_IDS = {
+  commission: "1MMsEGkQq0hz4I0_NwiKd19_cFqbIwMcEdCngjuYBYuo",
+  lease_tp:   "1xvjkvFaPoAeouo0a8ZVQSYptoMIQMfh4_eIE6Cm24Bo",
+  proud:      "1JDPTqsiKmVdwpp5gD4v12bw8jkwlfS7bbg7UqKzYJa0",
+};
+
+function escRe_(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function applyReplacements_(docId, pairs) {
+  const doc = DocumentApp.openById(docId);
+  const body = doc.getBody();
+  const report = [];
+  pairs.forEach(function (p) {
+    const pattern = p[2] === true ? p[0] : escRe_(p[0]);
+    const before = body.getText();
+    const matches = (before.match(new RegExp(pattern, "g")) || []).length;
+    body.replaceText(pattern, p[1]);
+    report.push(pattern.substring(0, 40) + " -> matches:" + matches);
+  });
+  doc.saveAndClose();
+  return report;
+}
+
+// ตั้งค่าครั้งเดียว: ใส่ {{merge_tag}} ใน template ทั้ง 3 ฉบับ (รันครั้งเดียวหลังอัปโหลด template ใหม่)
+function tagContractTemplates() {
+  const out = {};
+
+  // ---------- DOC 1: สัญญาคอมมิชชั่น ----------
+  out.commission = applyReplacements_(CONTRACT_TEMPLATE_IDS.commission, [
+    ["เมื่อวันที่ 25 พฤษภาคม พ.ศ. XXXX", "เมื่อวันที่ {{sign_date}}"],
+    ["นางสาว X+", "{{createdBy}}", true],
+    ["นายXXXX XXXX", "{{owner_name}}"],
+    ["โครงการ THE PROUD ทาวน์โฮม 304-โรจนะ เลขที่ 456/151 หมู่ 9 ตำบลหนองโพรง อำเภอศรีมหาโพธิ จังหวัดปราจีนบุรี 25140",
+     "โครงการ {{property_project_name}} เลขที่ {{property_address}}"],
+    ["ตั้งแต่วันที่ 05/07/2025 ถึงวันที่ 04/07/2026", "ตั้งแต่วันที่ {{start_date}} ถึงวันที่ {{expiry_date}}"],
+    ["อัตราค่าเช่าเดือนละ 32,000 บาท", "อัตราค่าเช่าเดือนละ {{rent_amount}} บาท"],
+    ["ในอัตราค่าเช่า 1 หรือ 0.5 เดือน เป็นจำนวนเงินสุทธิ 32,000 บาท (สามหมื่นสองพันบาทถ้วน)",
+     "ในอัตราค่าเช่า {{commission_rate}} เป็นจำนวนเงินสุทธิ {{commission_amount}} บาท"],
+  ]);
+
+  // ---------- DOC 2: สัญญาเช่าบ้าน_TP ----------
+  out.lease_tp = applyReplacements_(CONTRACT_TEMPLATE_IDS.lease_tp, [
+    ["หน้าเลขที่ TP2022041", "หน้าเลขที่ {{contract_code}}"],
+    ["ชื่อ-สกุลเจ้าของบ้าน", "{{owner_name}}"],
+    ["โทรศัพท์ xxxxxxxxxxxxxxxxxx", "โทรศัพท์ {{owner_phone}}"],
+    ["ต่อไปนี้ในสัญญานี้เรียกว่า \"ผู้ให้เช่า\" ฝ่ายหนึ่ง",
+     "ต่อไปนี้ในสัญญานี้เรียกว่า \"ผู้ให้เช่า\" ฝ่ายหนึ่ง (ที่อยู่: {{owner_address}})"],
+    ["กับ MR.QIU YAHAN อยู่บ้านเลขที่", "กับ {{tenant_name}} อยู่บ้านเลขที่ {{tenant_address}}"],
+    ["ซึ่งต่อไปนี้ในสัญญานี้เรียกว่า \"ผู้เช่า\" อีกฝ่ายหนึ่ง",
+     "ซึ่งต่อไปนี้ในสัญญานี้เรียกว่า \"ผู้เช่า\" อีกฝ่ายหนึ่ง (โทร: {{tenant_phone}})"],
+    ["081-715-2448", "{{tenant_phone}}"],
+    ["456/102", "{{property_address}}"],
+    ["22.8", "{{property_land_size}}"],
+    ["เดอะ พราวด์", "{{property_project_name}}"],
+    ["อัตรา 7,000บาท", "อัตรา {{rent_amount}} บาท"],
+    ["(เจ็ดพันบาทถ้วน)", ""],
+    ["ชำระภายในวันที่ _ 30__ ของแต่ละเดือน", "ชำระภายในวันที่ {{payment_due_day}} ของแต่ละเดือน"],
+    ["21,000.-", "{{security_deposit}}"],
+    ["(สองหมื่นหนึ่งพันบาทถ้วน)", ""],
+    ["เริ่มต้นในวันที่", "เริ่มต้นในวันที่ {{start_date}} ("],
+    ["สิ้นสุดในวันที่  _27 ธันวาคม 2567", "สิ้นสุดในวันที่ {{expiry_date}}"],
+    ["MR.QIU YAHAN", "{{tenant_name}}"],
+  ]);
+
+  // ---------- DOC 3: The Proud Town Home (MOU+Receipt+Lease) ----------
+  out.proud = applyReplacements_(CONTRACT_TEMPLATE_IDS.proud, [
+    ["456/151 หมู่ 9 ตำบลหนองโพรง อำเภอศรีมหาโพธิ จังหวัดปราจีนบุรี 25140", "{{property_address}}"],
+    ["THE PROUD ทาวน์โฮม 304-โรจนะ", "{{property_project_name}}"],
+    ["นายพิเชฐ จวนรุ่ง", "{{owner_name}}"],
+    ["นางสาวปรีดาภรณ์ โสนอ่อน", "{{tenant_name}}"],
+    ["นายนฤนาถ ช่วยชู", "{{createdBy}}"],
+    ["(Thirty two thousand Baht only)", ""],
+    ["(Sixty-four thousand Baht only)", ""],
+    ["(Ninety-six thousand baht. Baht Only)", ""],
+    ["96,000", "{{total_received}}"],
+    ["32,000", "{{rent_amount}}"],
+    ["64,000", "{{security_deposit}}"],
+    ["05/07/2025", "{{start_date}}"],
+    ["04/07/2026", "{{expiry_date}}"],
+    ["04/07/2025", "{{sign_date}}"],
+    ["เลขทะเบียนนิติบุคคล XXXXXXXXX สัญชาติ ไทย", "เลขทะเบียนนิติบุคคล {{tenant_id_number}} สัญชาติ {{tenant_nationality}}"],
+    ["อยู่ที่ XXX  ซ.XXX  XXXXXXXXXXXXXXXXXXX", "อยู่ที่ {{tenant_address}}"],
+    ["Miss XXXX  residing at XX  Soi XXX , Khlong Bang Bon Subdistrict, Bang Bon District, Bangkok.",
+     "Miss {{tenant_name}} residing at {{tenant_address}}."],
+    ["And Mr. XXXXX  residing at XXX/XXX  Ratchadaphisek Road, Huai Khwang District, Huai Khwang District, Bangkok.",
+     "And Mr. {{owner_name}} residing at {{owner_address}}."],
+    ["ธนาคาร กรุงเทพ", "{{bank_name}}"],
+    ["สาขา :  XXXXX", "สาขา : {{bank_branch}}"],
+    ["Branch:, XXXXX", "Branch: {{bank_branch}}"],
+    ["หมายเลขบัญชี : 12345+899", "หมายเลขบัญชี : {{bank_account_number}}"],
+    ["Account Number: 12345+899", "Account Number: {{bank_account_number}}"],
+    ["ชื่อบัญชี : XXXXXXXX", "ชื่อบัญชี : {{bank_account_name}}"],
+    ["Account Name:   XXXXXXXX", "Account Name: {{bank_account_name}}"],
+  ]);
+
+  Logger.log(JSON.stringify(out, null, 2));
+  return out;
+}
+
+// สร้าง PDF สัญญา 3 ฉบับ จาก template ใน Google Drive (เรียกจาก saveContract() อัตโนมัติ)
+function generateContractPDFs_(fieldMap) {
+  const CONTRACT_FOLDER_ID = "1S-HD0ek-N6wFNex1fWgI0IRr2PszRyRf";
+
+  // ดึงข้อมูลทรัพย์สินจากชีต properties
+  let propRow = null, propHeaders = null;
+  const propSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("properties");
+  if (propSheet) {
+    const data = propSheet.getDataRange().getValues();
+    propHeaders = data[0];
+    const codeCol = propHeaders.indexOf("property_code");
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][codeCol]) === String(fieldMap.property_code)) { propRow = data[i]; break; }
+    }
+  }
+  function propVal(col) {
+    if (!propRow || !propHeaders) return "";
+    const idx = propHeaders.indexOf(col);
+    return idx === -1 ? "" : (propRow[idx] || "");
+  }
+
+  const thaiMonths = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+  const today = new Date();
+  const signDateText = today.getDate() + " " + thaiMonths[today.getMonth()] + " " + (today.getFullYear() + 543);
+
+  const deposit = Number(fieldMap.security_deposit) || 0;
+  const advance = Number(fieldMap.advance_rent) || 0;
+  const totalReceived = deposit + advance;
+
+  let leaseDurationText = "";
+  if (fieldMap.start_date && fieldMap.expiry_date) {
+    const sd = new Date(fieldMap.start_date);
+    const ed = new Date(fieldMap.expiry_date);
+    if (!isNaN(sd) && !isNaN(ed)) {
+      const months = Math.round((ed - sd) / (1000 * 60 * 60 * 24 * 30));
+      leaseDurationText = months + " เดือน";
+    }
+  }
+
+  const mergeData = {
+    contract_code: fieldMap.contract_code || "",
+    tenant_name: fieldMap.tenant_name || "",
+    tenant_phone: fieldMap.tenant_phone || "",
+    tenant_id_number: fieldMap.tenant_id_number || "",
+    tenant_nationality: fieldMap.tenant_nationality || "ไทย",
+    tenant_address: fieldMap.tenant_address || "",
+    owner_name: fieldMap.owner_name || "",
+    owner_phone: fieldMap.owner_phone || "",
+    owner_address: fieldMap.owner_address || "",
+    start_date: fieldMap.start_date || "",
+    expiry_date: fieldMap.expiry_date || "",
+    sign_date: signDateText,
+    rent_amount: fieldMap.rent_amount || "",
+    payment_due_day: fieldMap.payment_due_day || "",
+    security_deposit: fieldMap.security_deposit || "",
+    commission_rate: fieldMap.commission_rate || "",
+    commission_amount: fieldMap.commission_amount || "",
+    bank_name: fieldMap.bank_name || "",
+    bank_branch: fieldMap.bank_branch || "",
+    bank_account_number: fieldMap.bank_account_number || "",
+    bank_account_name: fieldMap.bank_account_name || "",
+    witness_name: fieldMap.witness_name || "",
+    createdBy: fieldMap.createdBy || "",
+    property_project_name: propVal("project_name"),
+    property_address: propVal("address_display"),
+    property_land_size: propVal("land_size"),
+    total_received: totalReceived ? totalReceived.toLocaleString("en-US") : "",
+    lease_duration_text: leaseDurationText,
+  };
+
+  const folder = DriveApp.getFolderById(CONTRACT_FOLDER_ID);
+  const pdfUrls = {};
+
+  Object.keys(CONTRACT_TEMPLATE_IDS).forEach(function(key) {
+    const templateId = CONTRACT_TEMPLATE_IDS[key];
+    const copyName = (mergeData.contract_code || "contract") + "_" + key;
+    const copyFile = DriveApp.getFileById(templateId).makeCopy(copyName, folder);
+    const doc = DocumentApp.openById(copyFile.getId());
+    const body = doc.getBody();
+    Object.keys(mergeData).forEach(function(tag) {
+      const val = String(mergeData[tag]).replace(/\$/g, "$$$$");
+      body.replaceText("\\{\\{" + tag + "\\}\\}", val);
+    });
+    doc.saveAndClose();
+
+    const pdfBlob = copyFile.getAs(MimeType.PDF);
+    const pdfFile = folder.createFile(pdfBlob).setName(copyName + ".pdf");
+    pdfFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    copyFile.setTrashed(true);
+
+    pdfUrls[key] = pdfFile.getUrl();
+  });
+
+  return pdfUrls;
+}
+
 
 // สร้าง URL ฟอร์มลงทะเบียนผู้เช่า พร้อมแนบ lineUserId (ถ้ามี) เพื่อให้ฟอร์มรู้จักผู้ใช้อัตโนมัติ
 function buildCustomerRegisterUri(userId) {
