@@ -82,6 +82,10 @@
                         <input type="text" id="owner_phone" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
                     </div>
                 </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ที่อยู่เจ้าของบ้าน</label>
+                    <textarea id="owner_address" rows="2" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"></textarea>
+                </div>
 
                 <p class="section-title border-t border-gray-100 pt-3">เงื่อนไขสัญญา</p>
                 <div class="grid grid-cols-2 gap-3">
@@ -142,6 +146,32 @@
                     </div>
                 </div>
 
+                <p class="section-title border-t border-gray-100 pt-3">บัญชีธนาคาร (สำหรับรับเงินโอน)</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ธนาคาร</label>
+                        <input type="text" id="bank_name" placeholder="เช่น กสิกรไทย" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">สาขา</label>
+                        <input type="text" id="bank_branch" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">เลขที่บัญชี</label>
+                        <input type="text" id="bank_account_number" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อบัญชี</label>
+                        <input type="text" id="bank_account_name" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อพยาน (ผู้เซ็นสัญญาร่วม)</label>
+                    <input type="text" id="witness_name" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                </div>
+
                 <p class="section-title border-t border-gray-100 pt-3">อื่นๆ</p>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">สถานะสัญญา</label>
@@ -172,6 +202,10 @@
             <div class="text-5xl mb-3">✅</div>
             <h2 class="text-lg font-bold text-gray-800 mb-1">บันทึกสัญญาเรียบร้อย</h2>
             <p class="text-sm text-gray-500 mb-4">ระบบแจ้งเตือนทีมงานผ่าน LINE Group แล้ว</p>
+            <div id="pdfLinksBox" class="hidden text-left bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4 space-y-2">
+                <p class="text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-file-pdf mr-1"></i> เอกสารสัญญา (PDF)</p>
+                <div id="pdfLinksList" class="space-y-1.5"></div>
+            </div>
             <div class="flex gap-2">
                 <button onclick="document.getElementById('successModal').classList.add('hidden')" class="flex-1 border border-gray-300 text-gray-600 font-medium py-2.5 rounded-xl text-sm">
                     กรอกต่อ
@@ -210,15 +244,33 @@
             const fd = new FormData();
             fd.append('action', 'save_contract');
             const fieldIds = ['contract_code','property_code','tenant_name','tenant_phone','tenant_id_number',
-                'tenant_nationality','tenant_address','owner_name','owner_phone','start_date','expiry_date',
+                'tenant_nationality','tenant_address','owner_name','owner_phone','owner_address','start_date','expiry_date',
                 'rent_amount','payment_due_day','security_deposit','advance_rent','commission_rate',
-                'commission_amount','commission_status','commission_paid_date','status','notes','createdBy'];
+                'commission_amount','commission_status','commission_paid_date','bank_name','bank_branch',
+                'bank_account_number','bank_account_name','witness_name','status','notes','createdBy'];
             fieldIds.forEach(id => fd.append(id, document.getElementById(id).value));
 
             fetch(WEB_APP_URL, { method: "POST", body: fd })
             .then(res => res.json())
             .then(data => {
                 if (data.status === "success") {
+                    const pdfLabels = { commission: 'สัญญาคอมมิชชั่น (ตัวแทนหาผู้เช่า)', lease_tp: 'สัญญาเช่าบ้าน', proud: 'MOU + ใบเสร็จ + สัญญาเช่า (The Proud)' };
+                    const pdfBox = document.getElementById('pdfLinksBox');
+                    const pdfList = document.getElementById('pdfLinksList');
+                    pdfList.innerHTML = '';
+                    if (data.pdfUrls && !data.pdfUrls.error) {
+                        Object.keys(data.pdfUrls).forEach(key => {
+                            const a = document.createElement('a');
+                            a.href = data.pdfUrls[key];
+                            a.target = '_blank';
+                            a.className = 'flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm theme-text hover:bg-gray-100 transition';
+                            a.innerHTML = '<span>' + (pdfLabels[key] || key) + '</span><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>';
+                            pdfList.appendChild(a);
+                        });
+                        pdfBox.classList.remove('hidden');
+                    } else {
+                        pdfBox.classList.add('hidden');
+                    }
                     document.getElementById('successModal').classList.remove('hidden');
                     document.getElementById('contractForm').reset();
                     document.getElementById('tenant_nationality').value = 'ไทย';
