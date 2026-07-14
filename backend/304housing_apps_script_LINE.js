@@ -190,7 +190,6 @@ function doGet(e) {
 function handleLineEvents(events) {
   events.forEach(event => {
     try {
-      Logger.log("EVENT_SOURCE_DEBUG: " + JSON.stringify(event.source));
       switch (event.type) {
         case "follow":    handleFollow(event);   break;
         case "unfollow":  handleUnfollow(event); break;
