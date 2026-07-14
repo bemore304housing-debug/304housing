@@ -146,6 +146,7 @@ function doPost(e) {
       if (data.action === "approve") return approveSubmission(Number(data.row), data.property_code || "");
       if (data.action === "reject")  return rejectSubmission(Number(data.row), data.reason || "");
       if (data.action === "save_customer_lead") return saveCustomerLead(data);
+      if (data.action === "save_contract") return saveContract(data);
     }
 
     // ── 2. Form data (multipart / x-www-form-urlencoded) ──────
@@ -155,6 +156,7 @@ function doPost(e) {
     if (data.action === "approve")     return approveSubmission(Number(data.row), data.property_code || "");
     if (data.action === "reject")      return rejectSubmission(Number(data.row), data.reason || "");
     if (data.action === "save_customer_lead") return saveCustomerLead(data);
+    if (data.action === "save_contract") return saveContract(data);
 
     // ── 3. บันทึก Intake Form ──────────────────────────────────
     return saveSubmission(data);
@@ -869,6 +871,91 @@ function notifyAdminConsentWithdrawn(userId, rowCount) {
   }]);
 }
 
+// ═════════════════════════════════════════════════════════════
+//  CONTRACT (สัญญาเช่า + คอมมิชชั่น) — Admin กรอกหลังปิดดีล
+// ═════════════════════════════════════════════════════════════
+
+const CONTRACT_HEADERS = ["contract_code","property_code","tenant_name","tenant_phone","tenant_id_number","tenant_nationality","tenant_address","owner_name","owner_phone","start_date","expiry_date","rent_amount","payment_due_day","security_deposit","advance_rent","commission_rate","commission_amount","commission_status","commission_paid_date","status","notes","createdAt","createdBy"];
+
+function saveContract(data) {
+  try {
+    const ss    = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = getOrCreateSheet(ss, "contracts");
+
+    if (sheet.getLastRow() === 0) {
+      sheet.getRange(1, 1, 1, CONTRACT_HEADERS.length).setValues([CONTRACT_HEADERS])
+        .setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
+    }
+
+    const fieldMap = {
+      contract_code        : data.contract_code        || "",
+      property_code        : data.property_code        || "",
+      tenant_name           : data.tenant_name           || "",
+      tenant_phone          : data.tenant_phone          || "",
+      tenant_id_number      : data.tenant_id_number      || "",
+      tenant_nationality    : data.tenant_nationality    || "",
+      tenant_address        : data.tenant_address        || "",
+      owner_name             : data.owner_name             || "",
+      owner_phone            : data.owner_phone            || "",
+      start_date             : data.start_date             || "",
+      expiry_date            : data.expiry_date            || "",
+      rent_amount            : data.rent_amount            || "",
+      payment_due_day        : data.payment_due_day        || "",
+      security_deposit       : data.security_deposit       || "",
+      advance_rent           : data.advance_rent           || "",
+      commission_rate        : data.commission_rate        || "",
+      commission_amount      : data.commission_amount      || "",
+      commission_status      : data.commission_status      || "ยังไม่จ่าย",
+      commission_paid_date   : data.commission_paid_date   || "",
+      status                 : data.status                 || "ใช้งานอยู่",
+      notes                  : data.notes                  || "",
+      createdAt               : new Date(),
+      createdBy               : data.createdBy               || "",
+    };
+
+    // ป้องกันข้อมูลหาย: เติม header คอลัมน์ที่ขาดต่อท้ายอัตโนมัติ (เหมือน saveCustomerLead)
+    let headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const missingHeaders = CONTRACT_HEADERS.filter(h => headers.indexOf(h) === -1);
+    if (missingHeaders.length > 0) {
+      sheet.getRange(1, headers.length + 1, 1, missingHeaders.length).setValues([missingHeaders])
+        .setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
+      headers = headers.concat(missingHeaders);
+    }
+
+    const row = headers.map(h => fieldMap.hasOwnProperty(h) ? fieldMap[h] : "");
+    sheet.appendRow(row);
+
+    const lastRow = sheet.getLastRow();
+
+    notifyAdminNewContract(fieldMap, lastRow);
+
+    return jsonResponse({ status: "success", message: "บันทึกสัญญาเรียบร้อย", row: lastRow });
+
+  } catch (err) {
+    return jsonResponse({ status: "error", message: err.toString() });
+  }
+}
+
+// แจ้ง Admin Group เมื่อมีการบันทึกสัญญาใหม่ (เช็คงานคอมมิชชั่น)
+function notifyAdminNewContract(data, rowNum) {
+  const groupId = PropertiesService.getScriptProperties().getProperty("ADMIN_LINE_GROUP_ID");
+  if (!groupId || !LINE_TOKEN()) return;
+
+  const msg = [
+    "📄 บันทึกสัญญาเช่าใหม่!",
+    "",
+    "📋 แถวที่: " + rowNum,
+    "🔖 รหัสสัญญา: " + (data.contract_code || "-"),
+    "🏠 รหัสทรัพย์: " + (data.property_code || "-"),
+    "👤 ผู้เช่า: " + (data.tenant_name || "-"),
+    "📅 " + (data.start_date || "-") + " ถึง " + (data.expiry_date || "-"),
+    "💰 ค่าเช่า: " + (data.rent_amount || "-") + " บาท/เดือน",
+    "💵 คอมมิชชั่น: " + (data.commission_amount || "-") + " บาท (" + (data.commission_status || "ยังไม่จ่าย") + ")",
+  ].join("\n");
+
+  pushLine(groupId, [{ type: "text", text: msg }]);
+}
+
 // สร้าง URL ฟอร์มลงทะเบียนผู้เช่า พร้อมแนบ lineUserId (ถ้ามี) เพื่อให้ฟอร์มรู้จักผู้ใช้อัตโนมัติ
 function buildCustomerRegisterUri(userId) {
   return userId ? (CUSTOMER_REGISTER_URL + "?lineUserId=" + encodeURIComponent(userId)) : CUSTOMER_REGISTER_URL;
@@ -1127,7 +1214,7 @@ function setupSheets() {
   const propSheet = getOrCreateSheet(ss, "properties");
   propSheet.getRange(1, 1, 1, propHeaders.length).setValues([propHeaders]).setFontWeight("bold").setBackground("#1a5276").setFontColor("#ffffff");
 
-  const ctHeaders = ["contract_code","property_code","tenant_name","start_date","expiry_date","rent_amount","status","notes"];
+  const ctHeaders = ["contract_code","property_code","tenant_name","tenant_phone","tenant_id_number","tenant_nationality","tenant_address","owner_name","owner_phone","start_date","expiry_date","rent_amount","payment_due_day","security_deposit","advance_rent","commission_rate","commission_amount","commission_status","commission_paid_date","status","notes","createdAt","createdBy"];
   const ctSheet = getOrCreateSheet(ss, "contracts");
   ctSheet.getRange(1, 1, 1, ctHeaders.length).setValues([ctHeaders]).setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
 
