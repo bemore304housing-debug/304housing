@@ -363,15 +363,15 @@ function flexIntakeCard() {
       body: {
         type: "box", layout: "vertical", spacing: "sm",
         contents: [
-          { type: "text", text: "กรอกข้อมูลทรัพย์ผ่านแบบฟอร์มออนไลน์", wrap: true, color: "#555555", size: "sm" },
-          { type: "text", text: "ใช้เวลาประมาณ 3–5 นาที ไม่มีค่าใช้จ่าย", wrap: true, color: "#888888", size: "xs" },
+          { type: "text", text: "กรอกข้อมูลทรัพย์ผ่านแบบฟอร์มออนไลน์ เพื่อให้ทีมงานช่วยทำการตลาดหาผู้เช่าให้ท่าน", wrap: true, color: "#555555", size: "sm" },
+          { type: "text", text: "ลงทะเบียนฟรี ไม่มีค่าใช้จ่าย ใช้เวลาประมาณ 3–5 นาที", wrap: true, color: "#888888", size: "xs" },
           { type: "separator", margin: "md" },
           {
             type: "box", layout: "vertical", spacing: "xs",
             contents: [
               bulletText("📸 อัปโหลดรูปได้สูงสุด 6 ภาพ"),
               bulletText("✅ ทีมงานตรวจสอบภายใน 24 ชม."),
-              bulletText("🌐 รองรับเจ้าของชาวต่างชาติ"),
+              bulletText("📢 ช่วยทำการตลาดหาผู้เช่าให้ฟรี"),
             ]
           }
         ]
