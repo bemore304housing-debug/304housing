@@ -228,15 +228,12 @@ function handleMessage(event) {
     return;
   }
 
-  // ── ลงทะเบียนสนใจเช่า (ฝั่งผู้เช่า — Agency ติดต่อกลับเพื่อนัดชม/ทำสัญญา) ──
-  if (matchKeyword(text, ["ลงทะเบียนเช่า", "สนใจเช่า", "อยากเช่า", "ต้องการเช่า", "แจ้งความประสงค์เช่า"])) {
+  // ── ลงทะเบียนสนใจเช่า / ค้นหาบ้านเช่า (ฝั่งผู้เช่า) ──
+  // นโยบาย: ไม่เปิดให้ผู้เช่าค้นหาทรัพย์เองโดยตรง (ไม่ผ่านแอดมิน) — ทุกคำที่เกี่ยวกับ
+  // "หาบ้าน/ค้นหาบ้าน/หาห้องเช่า" ให้ส่งการ์ดลงทะเบียนแทนเสมอ Agency เป็นตัวกลางติดต่อกลับ
+  if (matchKeyword(text, ["ลงทะเบียนเช่า", "สนใจเช่า", "อยากเช่า", "ต้องการเช่า", "แจ้งความประสงค์เช่า",
+                           "หาห้องเช่า", "หาบ้านเช่า", "ค้นหาบ้าน", "หาบ้าน", "เช่าบ้าน", "search", "find"])) {
     pushLine(userId, [flexCustomerRegisterCard(userId)]);
-    return;
-  }
-
-  // ── ค้นหาบ้าน (ยังไม่เปิดใช้ Phase นี้ — คงคีย์เวิร์ดเดิมไว้เผื่ออนาคต) ──
-  if (matchKeyword(text, ["ค้นหาบ้าน", "หาบ้าน", "ดูบ้าน", "เช่าบ้าน", "search", "find"])) {
-    pushLine(userId, [flexSearchCard()]);
     return;
   }
 
@@ -284,7 +281,7 @@ function handlePostback(event) {
 
   if (data === "action=intake")  { pushLine(userId, [flexIntakeCard()]);  return; }
   if (data === "action=customer_register") { pushLine(userId, [flexCustomerRegisterCard(userId)]); return; }
-  if (data === "action=search")  { pushLine(userId, [flexSearchCard()]);  return; }
+  if (data === "action=search")  { pushLine(userId, [flexCustomerRegisterCard(userId)]);  return; }
   if (data === "action=contact") {
     pushLine(userId, [{
       type: "text", text: "📞 ติดต่อทีมงาน\n📱 LINE: @304housingbybemore\n☎️ 08X-XXX-XXXX"
