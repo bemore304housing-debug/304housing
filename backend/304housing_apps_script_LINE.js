@@ -241,7 +241,7 @@ function handleMessage(event) {
   if (matchKeyword(text, ["นัดชม", "ดูบ้าน", "จองเวลา", "appointment", "viewing"])) {
     pushLine(userId, [{
       type: "text",
-      text: "📅 ระบบนัดชมจะเปิดให้บริการเร็วๆ นี้ครับ\n\nสำหรับตอนนี้ติดต่อทีมงานได้ที่:\n📞 โทร/LINE: 08X-XXX-XXXX"
+      text: "📅 ระบบนัดชมจะเปิดให้บริการเร็วๆ นี้ครับ\n\nสำหรับตอนนี้ติดต่อทีมงานได้ที่:\n📞 โทร/LINE: 095-565-6879"
     }]);
     return;
   }
@@ -256,7 +256,7 @@ function handleMessage(event) {
   if (matchKeyword(text, ["ติดต่อ", "โทร", "contact", "call"])) {
     pushLine(userId, [{
       type: "text",
-      text: "📞 ติดต่อทีมงาน 304 Housing\n\n📱 LINE: @304housingbybemore\n☎️ โทร: 08X-XXX-XXXX\n⏰ เปิดทำการ: จ-ศ 8:00–18:00"
+      text: "📞 ติดต่อทีมงาน 304 Housing\n\n📱 LINE: @304housingbybemore\n☎️ โทร: 095-565-6879\n⏰ ช่วงเวลาติดต่อ จ.-อา. : 9:00–18:00"
     }]);
     return;
   }
@@ -284,7 +284,7 @@ function handlePostback(event) {
   if (data === "action=search")  { pushLine(userId, [flexCustomerRegisterCard(userId)]);  return; }
   if (data === "action=contact") {
     pushLine(userId, [{
-      type: "text", text: "📞 ติดต่อทีมงาน\n📱 LINE: @304housingbybemore\n☎️ 08X-XXX-XXXX"
+      type: "text", text: "📞 ติดต่อทีมงาน 304 Housing\n📱 LINE: @304housingbybemore\n☎️ โทร: 095-565-6879\n⏰ ช่วงเวลาติดต่อ จ.-อา. : 9:00–18:00"
     }]);
     return;
   }
