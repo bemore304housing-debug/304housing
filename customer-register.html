@@ -9,15 +9,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Prompt', sans-serif; }
-        .theme-bg { background-color: #1e4620; }
-        .theme-text { color: #1e4620; }
-        .theme-border:focus { border-color: #1e4620; ring-color: #1e4620; }
+        .theme-bg { background-color: #4d0b05; }
+        .theme-text { color: #4d0b05; }
+        .theme-border:focus { border-color: #4d0b05; ring-color: #4d0b05; }
         /* สวิตช์ Toggle Custom */
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #1e4620; }
+        input:checked + .slider { background-color: #4d0b05; }
         input:checked + .slider:before { transform: translateX(20px); }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5);
                          display: flex; align-items: center; justify-content: center; z-index: 50; }
@@ -54,20 +54,20 @@
 
                 <!-- ชื่อ-นามสกุล -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelLanguage">กรุณาเลือกภาษาที่ต้องการ</label><div class="grid grid-cols-4 gap-2" id="langButtonRow"><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="TH">ไทย</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="EN">EN</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="CN">中文</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition" data-lang="JP">日本語</button></div><input type="hidden" id="preferredLanguage" value="TH">
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelLanguage">กรุณาเลือกภาษาที่ต้องการ</label><div class="grid grid-cols-4 gap-2" id="langButtonRow"><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#4d0b05] transition" data-lang="TH">ไทย</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#4d0b05] transition" data-lang="EN">EN</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#4d0b05] transition" data-lang="CN">中文</button><button type="button" class="lang-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#4d0b05] transition" data-lang="JP">日本語</button></div><input type="hidden" id="preferredLanguage" value="TH">
                     
                 </div><div>
                     <label class="block text-xs font-medium text-gray-600 mb-1" id="labelFullName">ชื่อ - นามสกุล <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-regular fa-user"></i></span>
-                        <input type="text" id="fullName" required="" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="ชื่อ นามสกุล">
+                        <input type="text" id="fullName" required="" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#4d0b05] focus:ring-1 focus:ring-[#4d0b05]" placeholder="ชื่อ นามสกุล">
                     </div>
                 </div>
 
                 <!-- เบอร์โทรศัพท์ (Required) -->
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1" id="labelPhone">หมายเลขโทรศัพท์ <span class="text-red-500">*</span></label>
-                    <input type="tel" id="phoneNumber" required="" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="หมายเลขโทรศัพท์ *">
+                    <input type="tel" id="phoneNumber" required="" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#4d0b05] focus:ring-1 focus:ring-[#4d0b05]" placeholder="หมายเลขโทรศัพท์ *">
                 </div>
 
                 <!-- อีเมล -->
@@ -75,7 +75,7 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1" id="labelEmail">อีเมล</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-regular fa-envelope"></i></span>
-                        <input type="email" id="email" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="example@email.com">
+                        <input type="email" id="email" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#4d0b05] focus:ring-1 focus:ring-[#4d0b05]" placeholder="example@email.com">
                     </div>
                 </div>
 
@@ -83,11 +83,11 @@
                 <div id="socialContactBlock">
                     <label class="block text-xs font-medium text-gray-600 mb-1" id="labelSocial">ช่องทางติดต่อเพิ่มเติม (เลือก 1 ช่องทาง)</label>
                     <div class="grid grid-cols-3 gap-2 mb-2">
-                        <button type="button" data-social="whatsapp" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</button>
-                        <button type="button" data-social="wechat" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition"><i class="fa-brands fa-weixin mr-1"></i>WeChat</button>
-                        <button type="button" data-social="line" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#1e4620] transition"><i class="fa-brands fa-line mr-1"></i>LINE</button>
+                        <button type="button" data-social="whatsapp" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#4d0b05] transition"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</button>
+                        <button type="button" data-social="wechat" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#4d0b05] transition"><i class="fa-brands fa-weixin mr-1"></i>WeChat</button>
+                        <button type="button" data-social="line" class="social-btn px-2 py-2 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-[#4d0b05] transition"><i class="fa-brands fa-line mr-1"></i>LINE</button>
                     </div>
-                    <input type="text" id="socialContactInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="เลือกช่องทางด้านบน แล้วกรอก ID">
+                    <input type="text" id="socialContactInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#4d0b05] focus:ring-1 focus:ring-[#4d0b05]" placeholder="เลือกช่องทางด้านบน แล้วกรอก ID">
                     <input type="hidden" id="foreignSocial">
                     <input type="hidden" id="lineId">
                 </div>
@@ -97,14 +97,14 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1" id="labelLocation">พื้นที่ที่ต้องการเช่า / ทำเล</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm"><i class="fa-solid fa-location-dot"></i></span>
-                        <input type="text" id="targetLocation" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620]" placeholder="เช่น ใกล้นิคม 304, ท่าตูม, ศรีมหาโพธิ">
+                        <input type="text" id="targetLocation" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#4d0b05] focus:ring-1 focus:ring-[#4d0b05]" placeholder="เช่น ใกล้นิคม 304, ท่าตูม, ศรีมหาโพธิ">
                     </div>
                 </div>
 
                 <!-- ช่วงงบประมาณ (Required) -->
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1" id="labelBudget">กรุณาเลือกช่วงงบประมาณ (ต่อเดือน) <span class="text-red-500">*</span></label>
-                    <select id="budgetRange" required="" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620] bg-white text-gray-700">
+                    <select id="budgetRange" required="" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#4d0b05] focus:ring-1 focus:ring-[#4d0b05] bg-white text-gray-700">
                         <option value="" disabled="" selected="" data-i18n-key="budget0">กรุณาเลือกช่วงงบประมาณ (ต่อเดือน) *</option>
                         <option value="ต่ำกว่า 3,000 บาท" data-i18n-key="budget1">ต่ำกว่า 3,000 บาท/เดือน</option>
                         <option value="3,000 - 5,000 บาท" data-i18n-key="budget2">3,000 - 5,000 บาท/เดือน</option>
@@ -117,7 +117,7 @@
                 <!-- ระยะเวลาการเช่า -->
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1" id="labelDuration">ระยะเวลาการเช่า</label>
-                    <select id="rentalDuration" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620] bg-white text-gray-700">
+                    <select id="rentalDuration" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#4d0b05] focus:ring-1 focus:ring-[#4d0b05] bg-white text-gray-700">
                         <option value="" disabled="" selected="" data-i18n-key="duration0">กรุณาเลือกระยะเวลาการเช่า</option>
                         <option value="6 เดือน" data-i18n-key="duration1">6 เดือน</option>
                         <option value="1 ปี" data-i18n-key="duration2">1 ปี</option>
@@ -128,7 +128,7 @@
                 <!-- เดือนที่ต้องการย้ายเข้า -->
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1" id="labelMoveIn">มีความประสงค์จะย้ายเข้าอยู่ช่วงเดือนไหน</label>
-                    <select id="moveInMonth" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1e4620] focus:ring-1 focus:ring-[#1e4620] bg-white text-gray-700">
+                    <select id="moveInMonth" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#4d0b05] focus:ring-1 focus:ring-[#4d0b05] bg-white text-gray-700">
                         <option value="" disabled="" selected="" data-i18n-key="month0">กรุณาเลือกเดือนที่ต้องการย้ายเข้า</option>
                         <option value="มกราคม" data-i18n-key="month1">มกราคม</option>
                         <option value="กุมภาพันธ์" data-i18n-key="month2">กุมภาพันธ์</option>
@@ -165,13 +165,13 @@
                     เราเก็บข้อมูลของคุณเพื่อจับคู่ที่พักเช่าและติดต่อกลับเท่านั้น
                 </div>
                 <div class="flex items-start gap-2 pt-2">
-                    <input type="checkbox" id="consentCheckbox" required class="mt-1 h-4 w-4 rounded border-gray-300 text-[#1e4620] focus:ring-[#1e4620]">
+                    <input type="checkbox" id="consentCheckbox" required class="mt-1 h-4 w-4 rounded border-gray-300 text-[#4d0b05] focus:ring-[#4d0b05]">
                     <label for="consentCheckbox" class="text-xs text-gray-600 leading-relaxed" id="consentCheckboxLabel">
                         ฉันได้อ่านและยินยอมตาม <a id="privacyPolicyLink" href="privacy-policy.html?lang=TH" target="_blank" rel="noopener" class="theme-text underline font-medium">นโยบายความเป็นส่วนตัว</a> ก่อนส่งข้อมูล
                     </label>
                 </div>
 
-                <button type="submit" id="btnSubmit" disabled class="w-full theme-bg hover:bg-[#153216] text-white font-medium py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center opacity-50 cursor-not-allowed">
+                <button type="submit" id="btnSubmit" disabled class="w-full theme-bg hover:bg-[#360804] text-white font-medium py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center opacity-50 cursor-not-allowed">
                     <span id="btnSubmitText">ดำเนินการ</span> <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
                 </button>
             </form>
@@ -228,8 +228,8 @@
             buttons.forEach(btn => {
                 btn.addEventListener('click', function(){
                     selectedSocial = this.dataset.social;
-                    buttons.forEach(b => b.classList.remove('theme-bg','text-white','border-[#1e4620]'));
-                    this.classList.add('theme-bg','text-white','border-[#1e4620]');
+                    buttons.forEach(b => b.classList.remove('theme-bg','text-white','border-[#4d0b05]'));
+                    this.classList.add('theme-bg','text-white','border-[#4d0b05]');
                     input.placeholder = getEnterIdPlaceholder(this.textContent.trim());
                     syncHidden();
                 });
@@ -378,8 +378,8 @@
             if (hiddenLangInput) hiddenLangInput.value = lang;
 
             document.querySelectorAll('.lang-btn').forEach(function(b){
-                if (b.dataset.lang === lang) { b.classList.add('theme-bg','text-white','border-[#1e4620]'); }
-                else { b.classList.remove('theme-bg','text-white','border-[#1e4620]'); }
+                if (b.dataset.lang === lang) { b.classList.add('theme-bg','text-white','border-[#4d0b05]'); }
+                else { b.classList.remove('theme-bg','text-white','border-[#4d0b05]'); }
             });
         }
 
