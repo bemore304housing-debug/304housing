@@ -26,7 +26,7 @@
             <span class="font-bold text-lg bg-white theme-green px-2 py-0.5 rounded">304</span>
             <span class="font-semibold text-sm">Housing — ค้นหาทรัพย์ (Admin)</span>
         </div>
-        <div class="flex bg-green-900/50 p-1 rounded-lg border border-green-700 gap-0.5">
+        <div class="flex bg-[#4d0b05]/50 p-1 rounded-lg border border-[#4d0b05] gap-0.5">
             <button onclick="changeLang('th')" id="btn-th" class="lang-btn active">TH</button>
             <button onclick="changeLang('en')" id="btn-en" class="lang-btn inactive">EN</button>
             <button onclick="changeLang('zh')" id="btn-zh" class="lang-btn inactive">中文</button>
@@ -43,7 +43,7 @@
             <div>
                 <label id="lbl-type" class="block text-xs font-bold text-gray-500 mb-1"></label>
                 <select id="filter-type" onchange="filterProperties()"
-                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-[#4d0b05]">
                     <option value="all" id="opt-all"></option>
                     <option value="ทาวน์โฮม" id="opt-townhome"></option>
                     <option value="บ้านเดี่ยว" id="opt-house"></option>
@@ -54,7 +54,7 @@
             <div>
                 <label id="lbl-distance" class="block text-xs font-bold text-gray-500 mb-1"></label>
                 <select id="filter-distance" onchange="filterProperties()"
-                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-[#4d0b05]">
                     <option value="99" id="opt-dist-all"></option>
                     <option value="2" id="opt-dist-2"></option>
                     <option value="5" id="opt-dist-5"></option>
@@ -63,7 +63,7 @@
             <div>
                 <label id="lbl-budget" class="block text-xs font-bold text-gray-500 mb-1"></label>
                 <select id="filter-budget" onchange="filterProperties()"
-                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-[#4d0b05]">
                     <option value="999999" id="opt-budget-all"></option>
                     <option value="8000" id="opt-budget-8k"></option>
                     <option value="12000" id="opt-budget-12k"></option>
@@ -73,7 +73,7 @@
             <div>
                 <label id="lbl-shuttle" class="block text-xs font-bold text-gray-500 mb-1"></label>
                 <select id="filter-shuttle" onchange="filterProperties()"
-                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-[#4d0b05]">
                     <option value="all" id="opt-shuttle-all"></option>
                     <option value="ผ่าน" id="opt-shuttle-yes"></option>
                 </select>
@@ -81,14 +81,14 @@
             <div>
                 <label id="lbl-district" class="block text-xs font-bold text-gray-500 mb-1"></label>
                 <select id="filter-district" onchange="filterProperties()"
-                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-[#4d0b05]">
                     <option value="all" id="opt-district-all"></option>
                 </select>
             </div>
             <div>
                 <label id="lbl-sub-district" class="block text-xs font-bold text-gray-500 mb-1"></label>
                 <select id="filter-sub-district" onchange="filterProperties()"
-                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-700">
+                    class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-[#4d0b05]">
                     <option value="all" id="opt-sub-district-all"></option>
                 </select>
             </div>
@@ -362,13 +362,13 @@ function renderProperties(data) {
             </div>
             <div class="p-4 space-y-3">
                 <div class="flex justify-between items-center">
-                    <span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full">${p.type}</span>
+                    <span class="bg-[#f3ece4] text-[#4d0b05] text-xs font-bold px-2.5 py-1 rounded-full">${p.type}</span>
                     <span class="text-xs font-mono text-gray-400">${p.id}</span>
                 </div>
                 ${p.project_name ? `<p class="text-sm font-semibold text-gray-700 truncate">🏘️ ${p.project_name}</p>` : ''}
                 <div>
                     <p class="text-xs text-gray-400">${t.rent}</p>
-                    <p class="text-xl font-extrabold text-green-800">
+                    <p class="text-xl font-extrabold text-[#4d0b05]">
                         ${p.price.toLocaleString()}
                         <span class="text-xs font-normal text-gray-500">${t.month}</span>
                     </p>

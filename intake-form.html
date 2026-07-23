@@ -26,12 +26,12 @@
 <body class="bg-gray-100 min-h-screen pb-16">
 
 <!-- Header -->
-<div class="bg-green-800 text-white px-4 py-3 shadow-md sticky top-0 z-40">
+<div class="bg-[#4d0b05] text-white px-4 py-3 shadow-md sticky top-0 z-40">
     <div class="flex items-center space-x-3">
-        <div class="bg-white text-green-800 font-bold px-2 py-1 rounded text-sm shadow">304</div>
+        <div class="bg-white text-[#4d0b05] font-bold px-2 py-1 rounded text-sm shadow">304</div>
         <div>
             <h1 class="font-bold text-base leading-tight">304 Housing by Be More</h1>
-            <p class="text-xs text-green-200">ระบบรับฝากทรัพย์ — 304 Housing</p>
+            <p class="text-xs text-[#e2dad1]">ระบบรับฝากทรัพย์ — 304 Housing</p>
         </div>
     </div>
 </div>
@@ -43,7 +43,7 @@
         <label class="block text-gray-700 font-medium mb-2 text-sm flex items-center gap-2">
             🏠 ประเภททรัพย์ <span class="text-red-500">*</span>
         </label>
-        <select id="property_type" class="w-full border border-gray-300 rounded-lg p-2 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-green-600" required>
+        <select id="property_type" class="w-full border border-gray-300 rounded-lg p-2 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]" required>
             <option value="" disabled selected>-- เลือกประเภท --</option>
             <option value="ทาวน์โฮม">ทาวน์โฮม</option>
             <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
@@ -61,27 +61,27 @@
         <div>
             <label class="block text-gray-500 text-xs mb-1 font-medium">ชื่อโครงการ / หมู่บ้าน (ถ้ามี)</label>
             <input type="text" id="project_name" placeholder="เช่น หมู่บ้านกรีนวิลล์, คอนโด The Base"
-                class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
         </div>
         <div class="grid grid-cols-2 gap-2">
             <input type="text" id="address_no" placeholder="บ้านเลขที่ *"
-                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
             <input type="text" id="moo" placeholder="หมู่ที่"
-                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
         </div>
         <div class="grid grid-cols-2 gap-2">
             <input type="text" id="sub_district" placeholder="ตำบล *"
-                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
             <input type="text" id="district" placeholder="อำเภอ *"
-                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
         </div>
         <div>
             <label class="block text-gray-500 text-xs mb-1 font-medium">📌 ตำแหน่งที่ตั้งทรัพย์ (ไม่บังคับ)</label>
             <div class="flex gap-2">
                 <input type="url" id="map_url" placeholder="วาง URL จาก Google Maps หรือกดปุ่มขวาเพื่อปักหมุดอัตโนมัติ"
-                    class="flex-1 min-w-0 border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                    class="flex-1 min-w-0 border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
                 <button type="button" id="btn-gps" onclick="useCurrentLocation()"
-                    class="shrink-0 bg-green-600 text-white text-xs font-medium px-3 rounded-lg hover:bg-green-700 whitespace-nowrap">
+                    class="shrink-0 bg-[#4d0b05] text-white text-xs font-medium px-3 rounded-lg hover:bg-[#360804] whitespace-nowrap">
                     📍 ใช้ตำแหน่งปัจจุบัน
                 </button>
             </div>
@@ -92,11 +92,11 @@
         </div>
         <div class="grid grid-cols-2 gap-2">
             <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input type="checkbox" id="shuttle_bus" class="rounded border-gray-300 text-green-600">
+                <input type="checkbox" id="shuttle_bus" class="rounded border-gray-300 text-[#4d0b05]">
                 <span>🚌 รถรับส่งโรงงานผ่าน</span>
             </label>
             <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input type="checkbox" id="pets_allowed" class="rounded border-gray-300 text-green-600">
+                <input type="checkbox" id="pets_allowed" class="rounded border-gray-300 text-[#4d0b05]">
                 <span>🐾 เลี้ยงสัตว์ได้</span>
             </label>
         </div>
@@ -111,31 +111,31 @@
             <div>
                 <label class="block text-gray-500 text-xs mb-1">ห้องนอน</label>
                 <input type="number" id="bedrooms" value="1" min="0"
-                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
             </div>
             <div>
                 <label class="block text-gray-500 text-xs mb-1">ห้องน้ำ</label>
                 <input type="number" id="bathrooms" value="1" min="0"
-                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
             </div>
         </div>
         <div class="grid grid-cols-2 gap-4 mb-3">
             <div>
                 <label class="block text-gray-500 text-xs mb-1">ขนาดที่ดิน (ตร.ว.)</label>
                 <input type="number" id="land_size" placeholder="เช่น 50"
-                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
             </div>
             <div>
                 <label class="block text-gray-500 text-xs mb-1">พื้นที่ใช้สอย (ตร.ม.)</label>
                 <input type="number" id="area_size" placeholder="เช่น 30"
-                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
             </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-gray-500 text-xs mb-1">ที่จอดรถ</label>
                 <input type="text" id="parking" placeholder="เช่น ยนต์ 1"
-                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
             </div>
         </div>
     </div>
@@ -148,42 +148,42 @@
         <div class="space-y-2.5">
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="item_air" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="item_air" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>เครื่องปรับอากาศ</span>
                 </label>
                 <input type="number" id="qty_air" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
             </div>
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="item_fridge" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="item_fridge" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>ตู้เย็น</span>
                 </label>
                 <input type="number" id="qty_fridge" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
             </div>
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="item_washing" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="item_washing" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>เครื่องซักผ้า</span>
                 </label>
                 <input type="number" id="qty_washing" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
             </div>
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="item_tv" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="item_tv" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>โทรทัศน์</span>
                 </label>
                 <input type="number" id="qty_tv" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
             </div>
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="item_water_heater" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="item_water_heater" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>เครื่องทำน้ำอุ่น</span>
                 </label>
                 <input type="number" id="qty_water_heater" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
             </div>
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="item_wifi" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="item_wifi" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>อินเทอร์เน็ต / WiFi</span>
                 </label>
                 <span class="text-xs text-gray-400 w-14 text-center">มี/ไม่มี</span>
@@ -199,35 +199,35 @@
         <div class="space-y-2.5">
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="furn_bed" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="furn_bed" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>🛏️ เตียงนอน</span>
                 </label>
                 <input type="number" id="fqty_bed" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
             </div>
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="furn_wardrobe" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="furn_wardrobe" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>🚪 ตู้เสื้อผ้า</span>
                 </label>
                 <input type="number" id="fqty_wardrobe" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
             </div>
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="furn_dressing" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="furn_dressing" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>💄 โต๊ะเครื่องแป้ง</span>
                 </label>
                 <input type="number" id="fqty_dressing" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
             </div>
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="furn_sofa" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="furn_sofa" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>🛋️ โซฟา</span>
                 </label>
                 <input type="number" id="fqty_sofa" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
             </div>
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="furn_tvstand" class="rounded border-gray-300 text-green-600">
+                    <input type="checkbox" id="furn_tvstand" class="rounded border-gray-300 text-[#4d0b05]">
                     <span>📺 ชั้นวาง TV</span>
                 </label>
                 <input type="number" id="fqty_tvstand" value="1" min="0" class="w-14 border border-gray-300 rounded-lg p-1 text-center text-sm">
@@ -243,16 +243,16 @@
         <div>
             <label class="block text-gray-500 text-xs mb-1">ค่าเช่า (บาท/เดือน) *</label>
             <input type="number" id="rent_price" placeholder="เช่น 12000"
-                class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
         </div>
         <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <input type="checkbox" id="accept_foreigner" class="rounded border-gray-300 text-green-600" checked>
-            <span class="font-medium text-green-800">🌐 ยินดีรับชาวต่างชาติ + แจ้งเอกสาร TM30</span>
+            <input type="checkbox" id="accept_foreigner" class="rounded border-gray-300 text-[#4d0b05]" checked>
+            <span class="font-medium text-[#4d0b05]">🌐 ยินดีรับชาวต่างชาติ + แจ้งเอกสาร TM30</span>
         </label>
         <div>
             <label class="block text-gray-500 text-xs mb-1">หมายเหตุเพิ่มเติม</label>
             <textarea id="notes" rows="2" placeholder="รายละเอียดอื่นๆ เพิ่มเติม..."
-                class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"></textarea>
+                class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05] resize-none"></textarea>
         </div>
     </div>
 
@@ -263,9 +263,9 @@
         </label>
         <div class="grid grid-cols-2 gap-2">
             <input type="text" id="owner_name" placeholder="ชื่อเจ้าของ *"
-                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
             <input type="tel" id="owner_phone" placeholder="เบอร์โทรศัพท์ *"
-                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
+                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4d0b05]">
         </div>
     </div>
 
@@ -349,9 +349,9 @@
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <p class="text-xs text-gray-500 leading-relaxed mb-2">เราเก็บข้อมูลของคุณเพื่อประกาศทรัพย์สินและติดต่อประสานงานเท่านั้น</p>
         <div class="flex items-start gap-2">
-            <input type="checkbox" id="consentCheckbox" required class="mt-1 h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-600">
+            <input type="checkbox" id="consentCheckbox" required class="mt-1 h-4 w-4 rounded border-gray-300 text-[#4d0b05] focus:ring-[#4d0b05]">
             <label for="consentCheckbox" class="text-xs text-gray-600 leading-relaxed">
-                ฉันได้อ่านและยินยอมตาม <a href="privacy-policy.html?lang=TH" target="_blank" rel="noopener" class="text-green-700 underline font-medium">นโยบายความเป็นส่วนตัว</a> ก่อนส่งข้อมูล
+                ฉันได้อ่านและยินยอมตาม <a href="privacy-policy.html?lang=TH" target="_blank" rel="noopener" class="text-[#4d0b05] underline font-medium">นโยบายความเป็นส่วนตัว</a> ก่อนส่งข้อมูล
             </label>
         </div>
     </div>
@@ -359,7 +359,7 @@
     <!-- Submit -->
     <div class="pt-2 pb-4">
         <button onclick="validateAndSubmit()" id="btnSubmit" disabled
-            class="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-3.5 px-4 rounded-xl shadow-lg shadow-green-900/20 transition flex items-center justify-center gap-2 text-sm opacity-50 cursor-not-allowed">
+            class="w-full bg-[#4d0b05] hover:bg-[#360804] text-white font-medium py-3.5 px-4 rounded-xl shadow-lg shadow-[#4d0b05]/20 transition flex items-center justify-center gap-2 text-sm opacity-50 cursor-not-allowed">
             ✨ ส่งข้อมูลเข้าคลังทรัพย์
         </button>
         <p id="uploadStatus" class="text-center text-xs text-gray-400 mt-2 hidden">กำลังอัปโหลดรูปภาพ... กรุณารอสักครู่</p>
@@ -373,7 +373,7 @@
         <h2 class="text-lg font-bold text-gray-800 mb-1">ส่งข้อมูลสำเร็จ!</h2>
         <p class="text-sm text-gray-500 mb-4">ทีมงานจะตรวจสอบและติดต่อกลับภายใน 24 ชั่วโมง</p>
         <button onclick="resetForm()"
-            class="w-full bg-green-700 text-white font-medium py-2.5 rounded-xl text-sm">
+            class="w-full bg-[#4d0b05] text-white font-medium py-2.5 rounded-xl text-sm">
             ส่งรายการใหม่
         </button>
     </div>
