@@ -308,10 +308,10 @@ function flexMainMenu(userId) {
       type: "bubble",
       header: {
         type: "box", layout: "vertical",
-        backgroundColor: "#1e4620",
+        backgroundColor: "#4d0b05",
         contents: [
           { type: "text", text: "🏠 304 Housing by Be More", color: "#ffffff", weight: "bold", size: "md" },
-          { type: "text", text: "บริการหาบ้านเช่ารอบนิคม 304", color: "#bbf7d0", size: "sm", margin: "xs" }
+          { type: "text", text: "บริการหาบ้านเช่ารอบนิคม 304", color: "#e2dad1", size: "sm", margin: "xs" }
         ]
       },
       body: {
@@ -334,11 +334,11 @@ function flexMainMenu(userId) {
         type: "box", layout: "vertical", spacing: "sm",
         contents: [
           {
-            type: "button", style: "primary", color: "#1e4620",
+            type: "button", style: "primary", color: "#4d0b05",
             action: { type: "uri", label: "เจ้าของบ้านฝากบ้านให้เช่า", uri: INTAKE_FORM_URL }
           },
           {
-            type: "button", style: "primary", color: "#1e4620",
+            type: "button", style: "primary", color: "#4d0b05",
             action: { type: "uri", label: "ผู้เช่าหาบ้านเช่า", uri: buildCustomerRegisterUri(userId) }
           }
         ]
@@ -354,10 +354,10 @@ function flexIntakeCard() {
     contents: {
       type: "bubble",
       header: {
-        type: "box", layout: "vertical", backgroundColor: "#1e4620",
+        type: "box", layout: "vertical", backgroundColor: "#4d0b05",
         contents: [
           { type: "text", text: "📋 ฟอร์มฝากทรัพย์", color: "#ffffff", weight: "bold", size: "lg" },
-          { type: "text", text: "304 Housing by Be More", color: "#bbf7d0", size: "xs" }
+          { type: "text", text: "304 Housing by Be More", color: "#e2dad1", size: "xs" }
         ]
       },
       body: {
@@ -379,7 +379,7 @@ function flexIntakeCard() {
       footer: {
         type: "box", layout: "vertical",
         contents: [{
-          type: "button", style: "primary", color: "#1e4620",
+          type: "button", style: "primary", color: "#4d0b05",
           action: { type: "uri", label: "เปิดฟอร์มฝากทรัพย์ →", uri: INTAKE_FORM_URL }
         }]
       }
@@ -396,10 +396,10 @@ function flexCustomerRegisterCard(userId) {
     contents: {
       type: "bubble",
       header: {
-        type: "box", layout: "vertical", backgroundColor: "#1e4620",
+        type: "box", layout: "vertical", backgroundColor: "#4d0b05",
         contents: [
           { type: "text", text: "📝 ลงทะเบียนสนใจเช่า", color: "#ffffff", weight: "bold", size: "lg" },
-          { type: "text", text: "304 Housing by Be More", color: "#bbf7d0", size: "xs" }
+          { type: "text", text: "304 Housing by Be More", color: "#e2dad1", size: "xs" }
         ]
       },
       body: {
@@ -421,7 +421,7 @@ function flexCustomerRegisterCard(userId) {
       footer: {
         type: "box", layout: "vertical",
         contents: [{
-          type: "button", style: "primary", color: "#1e4620",
+          type: "button", style: "primary", color: "#4d0b05",
           action: { type: "uri", label: "ลงทะเบียนเลย →", uri: buildCustomerRegisterUri(userId) }
         }]
       }
@@ -447,10 +447,10 @@ function flexSearchCard() {
     contents: {
       type: "bubble",
       header: {
-        type: "box", layout: "vertical", backgroundColor: "#1e4620",
+        type: "box", layout: "vertical", backgroundColor: "#4d0b05",
         contents: [
           { type: "text", text: "🔍 ค้นหาบ้านเช่า", color: "#ffffff", weight: "bold", size: "lg" },
-          { type: "text", text: "รอบนิคม 304 จ.ปราจีนบุรี", color: "#bbf7d0", size: "xs" }
+          { type: "text", text: "รอบนิคม 304 จ.ปราจีนบุรี", color: "#e2dad1", size: "xs" }
         ]
       },
       body: {
@@ -460,7 +460,7 @@ function flexSearchCard() {
             type: "box", layout: "horizontal",
             contents: [
               { type: "text", text: "ทรัพย์พร้อมเช่า", color: "#555555", size: "sm", flex: 3 },
-              { type: "text", text: count + " รายการ", color: "#1e4620", size: "sm", weight: "bold", align: "end", flex: 2 }
+              { type: "text", text: count + " รายการ", color: "#4d0b05", size: "sm", weight: "bold", align: "end", flex: 2 }
             ]
           },
           { type: "separator", margin: "md" },
@@ -477,7 +477,7 @@ function flexSearchCard() {
       footer: {
         type: "box", layout: "vertical",
         contents: [{
-          type: "button", style: "primary", color: "#1e4620",
+          type: "button", style: "primary", color: "#4d0b05",
           action: { type: "uri", label: "ดูรายการทรัพย์ →", uri: INTAKE_FORM_URL.replace("intake-form", "property-search") }
         }]
       }
@@ -636,7 +636,7 @@ function notifyOwnerApproved(ownerUserId, propertyCode, propertyType) {
     contents: {
       type: "bubble",
       header: {
-        type: "box", layout: "vertical", backgroundColor: "#1e4620",
+        type: "box", layout: "vertical", backgroundColor: "#4d0b05",
         contents: [
           { type: "text", text: "✅ อนุมัติแล้ว!", color: "#ffffff", weight: "bold", size: "xl" }
         ]
@@ -646,7 +646,7 @@ function notifyOwnerApproved(ownerUserId, propertyCode, propertyType) {
         contents: [
           { type: "text", text: "ทรัพย์ของคุณได้รับการอนุมัติและเผยแพร่แล้วครับ! 🎉", wrap: true },
           { type: "separator", margin: "md" },
-          { type: "text", text: "รหัสทรัพย์: " + propertyCode, weight: "bold", color: "#1e4620" },
+          { type: "text", text: "รหัสทรัพย์: " + propertyCode, weight: "bold", color: "#4d0b05" },
           { type: "text", text: "ประเภท: " + propertyType, size: "sm", color: "#555555" },
           { type: "text", text: "ทรัพย์ของคุณจะปรากฏในหน้าค้นหาให้ลูกค้าเห็นทันที", wrap: true, size: "sm", color: "#888888", margin: "md" }
         ]
@@ -1593,7 +1593,7 @@ function priceRow(label, price) {
     type: "box", layout: "horizontal",
     contents: [
       { type: "text", text: label, size: "sm", color: "#555555", flex: 3 },
-      { type: "text", text: price + " บ./ด.", size: "sm", color: "#1e4620", weight: "bold", align: "end", flex: 2 }
+      { type: "text", text: price + " บ./ด.", size: "sm", color: "#4d0b05", weight: "bold", align: "end", flex: 2 }
     ]
   };
 }
