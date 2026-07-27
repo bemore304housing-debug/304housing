@@ -147,6 +147,7 @@ function doPost(e) {
       if (data.action === "reject")  return rejectSubmission(Number(data.row), data.reason || "");
       if (data.action === "save_customer_lead") return saveCustomerLead(data);
       if (data.action === "save_contract") return saveContract(data);
+      if (data.action === "issue_receipt") return issueReceipt(data);
     }
 
     // ── 2. Form data (multipart / x-www-form-urlencoded) ──────
@@ -157,6 +158,7 @@ function doPost(e) {
     if (data.action === "reject")      return rejectSubmission(Number(data.row), data.reason || "");
     if (data.action === "save_customer_lead") return saveCustomerLead(data);
     if (data.action === "save_contract") return saveContract(data);
+    if (data.action === "issue_receipt") return issueReceipt(data);
 
     // ── 3. บันทึก Intake Form ──────────────────────────────────
     return saveSubmission(data);
@@ -176,6 +178,7 @@ function doGet(e) {
     getProperties : getProperties,
     getDashboard  : getDashboard,
     getSubmissions: getSubmissions,
+    getContracts  : getContracts,
     getImage      : getImage,
     test          : testEndpoint,
   };
@@ -871,7 +874,7 @@ function notifyAdminConsentWithdrawn(userId, rowCount) {
 //  CONTRACT (สัญญาเช่า + คอมมิชชั่น) — Admin กรอกหลังปิดดีล
 // ═════════════════════════════════════════════════════════════
 
-const CONTRACT_HEADERS = ["contract_code","renewed_from","property_code","tenant_name","tenant_phone","tenant_id_number","tenant_nationality","tenant_address","owner_name","owner_phone","owner_address","start_date","expiry_date","rent_amount","payment_due_day","security_deposit","advance_rent","commission_rate","commission_amount","commission_status","commission_paid_date","bank_name","bank_branch","bank_account_number","bank_account_name","witness_name","status","notes","createdAt","createdBy"];
+const CONTRACT_HEADERS = ["contract_code","renewed_from","property_code","tenant_name","tenant_phone","tenant_id_number","tenant_nationality","tenant_address","owner_name","owner_phone","owner_address","start_date","expiry_date","rent_amount","payment_due_day","security_deposit","advance_rent","commission_rate","commission_amount","commission_status","commission_paid_date","bank_name","bank_branch","bank_account_number","bank_account_name","witness_name","status","notes","createdAt","createdBy","renewal_reminder_sent"];
 
 function saveContract(data) {
   try {
@@ -947,6 +950,112 @@ function saveContract(data) {
   } catch (err) {
     return jsonResponse({ status: "error", message: err.toString() });
   }
+}
+
+// ═════════════════════════════════════════════════════════════
+//  ควบคุมสัญญา — รายการสัญญาทั้งหมด + เตือนต่อสัญญาอัตโนมัติ
+// ═════════════════════════════════════════════════════════════
+
+function getContracts() {
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const ctSheet = ss.getSheetByName("contracts");
+    if (!ctSheet || ctSheet.getLastRow() < 2) return jsonResponse({ status: "success", contracts: [] });
+
+    const headers = ctSheet.getRange(1, 1, 1, ctSheet.getLastColumn()).getValues()[0];
+    const rows    = ctSheet.getRange(2, 1, ctSheet.getLastRow() - 1, ctSheet.getLastColumn()).getValues();
+    const now = new Date();
+
+    const contracts = rows.map((r, idx) => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = r[i]; });
+
+      const expiry = obj.expiry_date ? new Date(obj.expiry_date) : null;
+      let daysLeft = null, statusLabel = "ใช้งาน", reminderText = "-";
+      if (expiry && !isNaN(expiry)) {
+        daysLeft = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+        reminderText = daysLeft <= 0 ? "ถึงเวลา!" : ("อีก " + daysLeft + " วัน");
+        if (daysLeft <= 60) statusLabel = "ใกล้ครบกำหนด";
+      }
+
+      return {
+        row: idx + 2,
+        contract_code : obj.contract_code || "",
+        renewed_from  : obj.renewed_from  || "",
+        tenant_name   : obj.tenant_name   || "",
+        property_code : obj.property_code || "",
+        expiry_date   : (expiry && !isNaN(expiry)) ? Utilities.formatDate(expiry, Session.getScriptTimeZone(), "dd/MM/yyyy") : "-",
+        days_left     : daysLeft,
+        reminder_text : reminderText,
+        status_label  : statusLabel,
+      };
+    });
+
+    contracts.sort((a, b) => (a.days_left === null ? 999999 : a.days_left) - (b.days_left === null ? 999999 : b.days_left));
+
+    return jsonResponse({ status: "success", contracts });
+  } catch (err) {
+    return jsonResponse({ status: "error", message: err.toString() });
+  }
+}
+
+// รันทุกวันผ่าน time-driven trigger (ตั้งครั้งเดียวผ่าน setupContractReminderTrigger)
+// เตือนต่อสัญญาล่วงหน้า 2 เดือน — ส่ง LINE เข้ากลุ่มแอดมิน 1 ครั้งต่อสัญญา (กันสแปมด้วย renewal_reminder_sent)
+function checkContractRenewals() {
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const ctSheet = ss.getSheetByName("contracts");
+    if (!ctSheet || ctSheet.getLastRow() < 2) return;
+
+    const headers = ctSheet.getRange(1, 1, 1, ctSheet.getLastColumn()).getValues()[0];
+    const rows    = ctSheet.getRange(2, 1, ctSheet.getLastRow() - 1, ctSheet.getLastColumn()).getValues();
+    const now = new Date();
+
+    const contractCodeCol   = headers.indexOf("contract_code");
+    const expiryCol         = headers.indexOf("expiry_date");
+    const tenantCol         = headers.indexOf("tenant_name");
+    const propCol           = headers.indexOf("property_code");
+    const phoneCol          = headers.indexOf("tenant_phone");
+    const reminderSentCol   = headers.indexOf("renewal_reminder_sent");
+    if (reminderSentCol === -1 || expiryCol === -1) return;
+
+    rows.forEach((r, idx) => {
+      const expiry = r[expiryCol] ? new Date(r[expiryCol]) : null;
+      if (!expiry || isNaN(expiry)) return;
+      const daysLeft = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+      const alreadySent = r[reminderSentCol];
+      if (daysLeft <= 60 && daysLeft >= 0 && !alreadySent) {
+        const msg = [
+          "🔔 แจ้งเตือนต่อสัญญาเช่า!",
+          "",
+          "🔖 รหัสสัญญา: " + (r[contractCodeCol] || "-"),
+          "🏠 รหัสทรัพย์: " + (r[propCol] || "-"),
+          "👤 ผู้เช่า: " + (r[tenantCol] || "-") + (phoneCol > -1 && r[phoneCol] ? " (" + r[phoneCol] + ")" : ""),
+          "📅 ครบกำหนด: " + Utilities.formatDate(expiry, Session.getScriptTimeZone(), "dd/MM/yyyy") + " (อีก " + daysLeft + " วัน)",
+          "",
+          "➡️ กรุณาติดต่อผู้เช่าเพื่อสอบถามการต่อสัญญา และออกใบเสร็จผ่าน Dashboard เมื่อได้รับชำระ",
+        ].join("\n");
+        const groupId = PropertiesService.getScriptProperties().getProperty("ADMIN_LINE_GROUP_ID");
+        if (groupId && LINE_TOKEN()) pushLine(groupId, [{ type: "text", text: msg }]);
+        ctSheet.getRange(idx + 2, reminderSentCol + 1).setValue(now);
+      }
+    });
+  } catch (err) {
+    Logger.log("checkContractRenewals error: " + err.toString());
+  }
+}
+
+// รันครั้งเดียวจาก Editor -> Run เพื่อติดตั้ง trigger รายวัน (09:00 น.)
+function setupContractReminderTrigger() {
+  ScriptApp.getProjectTriggers().forEach(t => {
+    if (t.getHandlerFunction() === "checkContractRenewals") ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger("checkContractRenewals")
+    .timeBased()
+    .everyDays(1)
+    .atHour(9)
+    .create();
+  Logger.log("✅ ตั้งค่า trigger เตือนต่อสัญญาเรียบร้อย — รันทุกวัน 09:00 น.");
 }
 
 // แจ้ง Admin Group เมื่อมีการบันทึกสัญญาใหม่ (เช็คงานคอมมิชชั่น)
@@ -1172,6 +1281,70 @@ function generateContractPDFs_(fieldMap) {
   return pdfUrls;
 }
 
+
+// ═════════════════════════════════════════════════════════════
+//  ใบเสร็จรับเงิน — ออกอัตโนมัติเมื่อลูกค้าต่อสัญญา/ชำระเงิน
+// ═════════════════════════════════════════════════════════════
+
+const RECEIPT_HEADERS = ["receipt_code","contract_code","tenant_name","amount","payment_for","issued_date","issued_by","doc_url"];
+
+function issueReceipt(data) {
+  try {
+    const ss    = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = getOrCreateSheet(ss, "receipts");
+
+    if (sheet.getLastRow() === 0) {
+      sheet.getRange(1, 1, 1, RECEIPT_HEADERS.length).setValues([RECEIPT_HEADERS])
+        .setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
+    }
+
+    const receiptCode = "RC-" + Utilities.formatDate(new Date(), "Asia/Bangkok", "yyMMdd") + "-" + String(sheet.getLastRow()).padStart(3, "0");
+    const docUrl = generateReceiptDoc_(receiptCode, data);
+
+    sheet.appendRow([
+      receiptCode,
+      data.contract_code || "",
+      data.tenant_name   || "",
+      data.amount        || "",
+      data.payment_for   || "ต่อสัญญาเช่า",
+      new Date(),
+      data.issued_by      || "",
+      docUrl,
+    ]);
+
+    return jsonResponse({ status: "success", message: "ออกใบเสร็จเรียบร้อย", receipt_code: receiptCode, doc_url: docUrl });
+  } catch (err) {
+    return jsonResponse({ status: "error", message: err.toString() });
+  }
+}
+
+function generateReceiptDoc_(receiptCode, data) {
+  const doc  = DocumentApp.create(receiptCode + "_ใบเสร็จ");
+  const body = doc.getBody();
+
+  body.appendParagraph("304 Housing by Be More").setHeading(DocumentApp.ParagraphHeading.TITLE);
+  body.appendParagraph("ใบเสร็จรับเงิน / Receipt").setHeading(DocumentApp.ParagraphHeading.HEADING1);
+  body.appendParagraph("เลขที่ใบเสร็จ: " + receiptCode);
+  body.appendParagraph("วันที่: " + Utilities.formatDate(new Date(), "Asia/Bangkok", "dd/MM/yyyy"));
+  body.appendParagraph("");
+  body.appendParagraph("ได้รับเงินจาก: " + (data.tenant_name || "-"));
+  body.appendParagraph("รหัสสัญญาอ้างอิง: " + (data.contract_code || "-"));
+  body.appendParagraph("รายการ: " + (data.payment_for || "ค่าต่อสัญญาเช่า"));
+  body.appendParagraph("จำนวนเงิน: " + Number(data.amount || 0).toLocaleString("en-US") + " บาท");
+  body.appendParagraph("");
+  body.appendParagraph("ผู้รับเงิน: ______________________");
+
+  doc.saveAndClose();
+
+  const file    = DriveApp.getFileById(doc.getId());
+  const pdfBlob = file.getAs(MimeType.PDF);
+  const folder  = getOrCreateDriveFolder("304Housing-Receipts");
+  const pdfFile = folder.createFile(pdfBlob).setName(receiptCode + ".pdf");
+  pdfFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  file.setTrashed(true);
+
+  return pdfFile.getUrl();
+}
 
 // สร้าง URL ฟอร์มลงทะเบียนผู้เช่า พร้อมแนบ lineUserId (ถ้ามี) เพื่อให้ฟอร์มรู้จักผู้ใช้อัตโนมัติ
 function buildCustomerRegisterUri(userId) {
