@@ -871,7 +871,7 @@ function notifyAdminConsentWithdrawn(userId, rowCount) {
 //  CONTRACT (สัญญาเช่า + คอมมิชชั่น) — Admin กรอกหลังปิดดีล
 // ═════════════════════════════════════════════════════════════
 
-const CONTRACT_HEADERS = ["contract_code","property_code","tenant_name","tenant_phone","tenant_id_number","tenant_nationality","tenant_address","owner_name","owner_phone","owner_address","start_date","expiry_date","rent_amount","payment_due_day","security_deposit","advance_rent","commission_rate","commission_amount","commission_status","commission_paid_date","bank_name","bank_branch","bank_account_number","bank_account_name","witness_name","status","notes","createdAt","createdBy"];
+const CONTRACT_HEADERS = ["contract_code","renewed_from","property_code","tenant_name","tenant_phone","tenant_id_number","tenant_nationality","tenant_address","owner_name","owner_phone","owner_address","start_date","expiry_date","rent_amount","payment_due_day","security_deposit","advance_rent","commission_rate","commission_amount","commission_status","commission_paid_date","bank_name","bank_branch","bank_account_number","bank_account_name","witness_name","status","notes","createdAt","createdBy"];
 
 function saveContract(data) {
   try {
@@ -883,8 +883,12 @@ function saveContract(data) {
         .setFontWeight("bold").setBackground("#4a235a").setFontColor("#ffffff");
     }
 
+    // สร้างรหัสสัญญาอัตโนมัติ — แอดมินไม่ต้องพิมพ์เอง กันรหัสซ้ำ/รูปแบบไม่ตรงกัน
+    const contractCode = "CT-" + Utilities.formatDate(new Date(), "Asia/Bangkok", "yyMMdd") + "-" + String(sheet.getLastRow()).padStart(3, "0");
+
     const fieldMap = {
-      contract_code        : data.contract_code        || "",
+      contract_code        : contractCode,
+      renewed_from          : data.renewed_from          || "",
       property_code        : data.property_code        || "",
       tenant_name           : data.tenant_name           || "",
       tenant_phone          : data.tenant_phone          || "",
@@ -938,7 +942,7 @@ function saveContract(data) {
       pdfUrls = { error: pdfErr.toString() };
     }
 
-    return jsonResponse({ status: "success", message: "บันทึกสัญญาเรียบร้อย", row: lastRow, pdfUrls: pdfUrls });
+    return jsonResponse({ status: "success", message: "บันทึกสัญญาเรียบร้อย", row: lastRow, contract_code: contractCode, pdfUrls: pdfUrls });
 
   } catch (err) {
     return jsonResponse({ status: "error", message: err.toString() });
@@ -955,12 +959,13 @@ function notifyAdminNewContract(data, rowNum) {
     "",
     "📋 แถวที่: " + rowNum,
     "🔖 รหัสสัญญา: " + (data.contract_code || "-"),
+    data.renewed_from ? "🔄 ต่อจากสัญญา: " + data.renewed_from : null,
     "🏠 รหัสทรัพย์: " + (data.property_code || "-"),
     "👤 ผู้เช่า: " + (data.tenant_name || "-"),
     "📅 " + (data.start_date || "-") + " ถึง " + (data.expiry_date || "-"),
     "💰 ค่าเช่า: " + (data.rent_amount || "-") + " บาท/เดือน",
     "💵 คอมมิชชั่น: " + (data.commission_amount || "-") + " บาท (" + (data.commission_status || "ยังไม่จ่าย") + ")",
-  ].join("\n");
+  ].filter(l => l !== null).join("\n");
 
   pushLine(groupId, [{ type: "text", text: msg }]);
 }
