@@ -31,15 +31,16 @@
                 <h2 class="text-lg font-medium text-gray-800">เพิ่มสัญญาเช่าใหม่</h2>
                 <p class="text-sm text-gray-500 mt-1">กรอกหลังจากลูกค้าเซ็นสัญญาและชำระเงินประกัน/ค่าเช่าล่วงหน้าให้เจ้าของบ้านเรียบร้อยแล้ว</p>
                 <div class="mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800">
-                    <i class="fa-solid fa-circle-info mr-1"></i> ต่อสัญญาใหม่ทุกปี ให้กรอกเป็นสัญญาใหม่ 1 แถวเสมอ (อย่าแก้ทับแถวเดิม) แนะนำตั้งรหัสสัญญาแบบ <code>TP-0102-Y1</code>, <code>TP-0102-Y2</code>
+                    <i class="fa-solid fa-circle-info mr-1"></i> รหัสสัญญาจะสร้างให้อัตโนมัติหลังบันทึก ไม่ต้องกรอกเอง หากเป็นการต่อสัญญาเดิม ให้ระบุ "รหัสสัญญาเช่าเดิม" ด้านล่างเพื่ออ้างอิง และปรับปรุงรายละเอียดในฟอร์มให้ตรงกับสัญญาฉบับใหม่ได้ตามจริง (กรอกเป็นแถวใหม่เสมอ ไม่แก้ทับแถวเดิม)
                 </div>
             </div>
 
             <form id="contractForm" class="space-y-4">
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">รหัสสัญญา <span class="text-red-500">*</span></label>
-                    <input type="text" id="contract_code" placeholder="เช่น TP-0102-Y1" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1" required>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">รหัสสัญญาเช่าเดิม <span class="text-gray-400 font-normal">(กรอกเฉพาะกรณีต่อสัญญา)</span></label>
+                    <input type="text" id="renewed_from" placeholder="เช่น CT-260101-001 — เว้นว่างถ้าเป็นสัญญาใหม่" class="theme-border w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1">
+                    <p class="text-[11px] text-gray-400 mt-1">รหัสสัญญาฉบับใหม่จะถูกสร้างให้อัตโนมัติหลังบันทึก</p>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">รหัสทรัพย์ <span class="text-red-500">*</span></label>
@@ -201,6 +202,7 @@
         <div class="bg-white rounded-2xl p-6 mx-6 shadow-2xl text-center max-w-sm">
             <div class="text-5xl mb-3">✅</div>
             <h2 class="text-lg font-bold text-gray-800 mb-1">บันทึกสัญญาเรียบร้อย</h2>
+            <p id="generatedCodeText" class="text-sm font-bold theme-text mb-1"></p>
             <p class="text-sm text-gray-500 mb-4">ระบบแจ้งเตือนทีมงานผ่าน LINE Group แล้ว</p>
             <div id="pdfLinksBox" class="hidden text-left bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4 space-y-2">
                 <p class="text-xs font-medium text-gray-500 mb-1"><i class="fa-solid fa-file-pdf mr-1"></i> เอกสารสัญญา (PDF)</p>
@@ -227,7 +229,7 @@
         document.getElementById('contractForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const requiredFields = ['contract_code', 'property_code', 'tenant_name', 'start_date', 'expiry_date', 'rent_amount'];
+            const requiredFields = ['property_code', 'tenant_name', 'start_date', 'expiry_date', 'rent_amount'];
             for (const id of requiredFields) {
                 const el = document.getElementById(id);
                 if (!el.value.trim()) {
@@ -243,7 +245,7 @@
 
             const fd = new FormData();
             fd.append('action', 'save_contract');
-            const fieldIds = ['contract_code','property_code','tenant_name','tenant_phone','tenant_id_number',
+            const fieldIds = ['renewed_from','property_code','tenant_name','tenant_phone','tenant_id_number',
                 'tenant_nationality','tenant_address','owner_name','owner_phone','owner_address','start_date','expiry_date',
                 'rent_amount','payment_due_day','security_deposit','advance_rent','commission_rate',
                 'commission_amount','commission_status','commission_paid_date','bank_name','bank_branch',
@@ -271,6 +273,7 @@
                     } else {
                         pdfBox.classList.add('hidden');
                     }
+                    document.getElementById('generatedCodeText').textContent = data.contract_code ? ('รหัสสัญญา: ' + data.contract_code) : '';
                     document.getElementById('successModal').classList.remove('hidden');
                     document.getElementById('contractForm').reset();
                     document.getElementById('tenant_nationality').value = 'ไทย';
