@@ -138,12 +138,12 @@
                 </div>
             </section>
 
-            <!-- Contract Alerts -->
+            <!-- Contract Control -->
             <section id="contracts" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                <div class="mb-4 flex items-center justify-between">
+                <div class="mb-4 flex items-center justify-between flex-wrap gap-2">
                     <h3 class="text-sm font-bold text-gray-800">
                         <i class="fa-solid fa-file-contract text-blue-500 mr-1.5"></i>
-                        แจ้งเตือนสัญญาเช่าใกล้หมดอายุ (ล่วงหน้า 2 เดือน)
+                        ควบคุมสัญญา — เตือนต่อสัญญาอัตโนมัติล่วงหน้า 2 เดือน
                     </h3>
                     <a href="contract-form.html" class="bg-theme-green text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:opacity-90 transition whitespace-nowrap">
                         <i class="fa-solid fa-plus mr-1"></i> เพิ่มสัญญาใหม่
@@ -155,6 +155,10 @@
                         <p class="text-xs text-gray-400">กำลังโหลด...</p>
                     </div>
                 </div>
+                <p class="text-xs text-gray-400 mt-3">
+                    <i class="fa-solid fa-circle-info mr-1"></i>
+                    ระบบส่ง LINE แจ้งเตือนเข้ากลุ่มแอดมินอัตโนมัติทุกวัน 09:00 น. เมื่อสัญญาเหลืออายุ ≤ 60 วัน และออกใบเสร็จรับเงินรหัส RC- ให้อัตโนมัติเมื่อกดปุ่ม "ออกใบเสร็จ"
+                </p>
             </section>
 
         </div>
@@ -191,9 +195,10 @@ new Chart(ctx, {
 // ---- Load Dashboard ----
 async function loadDashboard() {
     try {
-        const [dashRes, subRes] = await Promise.all([
+        const [dashRes, subRes, contractsRes] = await Promise.all([
             fetch(`${WEB_APP_URL}?action=getDashboard`).then(r => r.json()),
-            fetch(`${WEB_APP_URL}?action=getSubmissions`).then(r => r.json())
+            fetch(`${WEB_APP_URL}?action=getSubmissions`).then(r => r.json()),
+            fetch(`${WEB_APP_URL}?action=getContracts`).then(r => r.json())
         ]);
 
         // KPI
@@ -201,7 +206,13 @@ async function loadDashboard() {
             document.getElementById('kpi-published').textContent = dashRes.published_count ?? 0;
             document.getElementById('kpi-pending').textContent   = dashRes.pending_count ?? 0;
             document.getElementById('kpi-expiring').textContent  = dashRes.expiring_count ?? 0;
-            renderContracts(dashRes.expiring_list || []);
+        }
+
+        // Contract Control table
+        if (contractsRes.status === 'success') {
+            renderContracts(contractsRes.contracts || []);
+        } else {
+            renderContracts([]);
         }
 
         // Queue
@@ -313,25 +324,82 @@ async function rejectProperty(rowId, sheetRow) {
 function renderContracts(list) {
     const el = document.getElementById('contracts-body');
     if (!list.length) {
-        el.innerHTML = `<div class="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 text-center">
-            ✅ ไม่มีสัญญาที่ใกล้หมดอายุในช่วง 2 เดือนข้างหน้า
+        el.innerHTML = `<div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-500 text-center">
+            ยังไม่มีข้อมูลสัญญาในระบบ
         </div>`;
         return;
     }
-    el.innerHTML = list.map(c => `
-        <div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div class="flex items-start space-x-3">
-                <i class="fa-solid fa-triangle-exclamation text-red-500 text-lg mt-0.5"></i>
-                <div>
-                    <p class="text-xs font-bold text-red-900">สัญญา ${c.contract_code} ใกล้หมดอายุ</p>
-                    <p class="text-xs text-red-700 mt-0.5">ทรัพย์: ${c.property_code} | ผู้เช่า: ${c.tenant_name} | หมดอายุ: ${c.expiry_date}</p>
-                </div>
-            </div>
-            <button onclick="alert('📨 จำลองการส่ง LINE แจ้งเตือนต่อสัญญาแล้วครับ')"
-                class="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-red-700 transition whitespace-nowrap">
-                <i class="fa-solid fa-paper-plane mr-1"></i> ส่งแจ้งเตือน
-            </button>
-        </div>`).join('');
+
+    const badge = (label) => label === 'ใกล้ครบกำหนด'
+        ? `<span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap"><i class="fa-solid fa-triangle-exclamation mr-1"></i>ใกล้ครบกำหนด</span>`
+        : `<span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap"><i class="fa-solid fa-circle-check mr-1"></i>ใช้งาน</span>`;
+
+    const rows = list.map((c, i) => `
+        <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
+            <td class="p-3 font-mono font-semibold text-gray-800 whitespace-nowrap">${c.contract_code || '-'}</td>
+            <td class="p-3 text-gray-700">${c.tenant_name || '-'}</td>
+            <td class="p-3 text-gray-600 whitespace-nowrap">${c.expiry_date || '-'}</td>
+            <td class="p-3 ${c.status_label === 'ใกล้ครบกำหนด' ? 'text-amber-700 font-bold' : 'text-gray-500'} whitespace-nowrap">${c.reminder_text || '-'}</td>
+            <td class="p-3">${badge(c.status_label)}</td>
+            <td class="p-3 text-center">
+                <button onclick="openReceiptModal(${i})"
+                    class="bg-[#4d0b05] text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-[#360804] transition whitespace-nowrap">
+                    <i class="fa-solid fa-receipt mr-1"></i> ออกใบเสร็จ
+                </button>
+            </td>
+        </tr>`).join('');
+
+    el.innerHTML = `
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-100 text-slate-600 uppercase font-bold border-b border-gray-200">
+                    <tr>
+                        <th class="p-3">เลขที่สัญญา</th>
+                        <th class="p-3">ผู้เช่า</th>
+                        <th class="p-3">ครบกำหนด</th>
+                        <th class="p-3">เตือน</th>
+                        <th class="p-3">สถานะ</th>
+                        <th class="p-3 text-center">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>`;
+
+    window.__contractsList = list;
+}
+
+function openReceiptModal(idx) {
+    const c = (window.__contractsList || [])[idx];
+    if (!c) return;
+    const amount = prompt(`ออกใบเสร็จสำหรับสัญญา ${c.contract_code} (${c.tenant_name})\n\nระบุจำนวนเงิน (บาท):`, '');
+    if (amount === null || amount.trim() === '') return;
+    if (isNaN(Number(amount)) || Number(amount) <= 0) { alert('❌ กรุณาระบุจำนวนเงินเป็นตัวเลขที่ถูกต้อง'); return; }
+
+    const paymentFor = prompt('รายการ (เช่น ค่าต่อสัญญาเช่า / ค่ามัดจำ):', 'ค่าต่อสัญญาเช่า') || 'ค่าต่อสัญญาเช่า';
+
+    issueReceipt({
+        contract_code: c.contract_code,
+        tenant_name  : c.tenant_name,
+        amount       : Number(amount),
+        payment_for  : paymentFor,
+        issued_by    : 'ผู้ดูแลระบบ'
+    });
+}
+
+async function issueReceipt(payload) {
+    try {
+        const fd = new FormData();
+        fd.append('action', 'issue_receipt');
+        Object.keys(payload).forEach(k => fd.append(k, payload[k]));
+        const res  = await fetch(WEB_APP_URL, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.status === 'success') {
+            alert(`🧾 ออกใบเสร็จสำเร็จ!\n\nเลขที่ใบเสร็จ: ${json.receipt_code}\n\nเปิดไฟล์ PDF: ${json.doc_url}`);
+        } else throw new Error(json.message);
+    } catch (err) {
+        alert('❌ ออกใบเสร็จไม่สำเร็จ: ' + err.message);
+    }
 }
 
 // โหลดทันทีเมื่อเปิดหน้า
