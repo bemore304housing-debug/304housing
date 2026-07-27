@@ -165,6 +165,41 @@
     </main>
 </div>
 
+<!-- Receipt Modal -->
+<div id="receiptModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+        <div class="flex items-start justify-between mb-1">
+            <h3 class="text-base font-bold text-gray-800"><i class="fa-solid fa-receipt text-[#4d0b05] mr-1.5"></i>ออกใบเสร็จรับเงิน</h3>
+            <button onclick="closeReceiptModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <p id="receiptModalSubtitle" class="text-xs text-gray-500 mb-3 font-semibold"></p>
+        <p class="text-xs text-gray-400 bg-gray-50 border border-gray-100 rounded-lg p-2.5 mb-4 leading-relaxed">
+            ใช้ปุ่มนี้เมื่อ<b>ได้รับชำระเงินจากผู้เช่าแล้วจริง</b> (เช่น ค่าต่อสัญญาเช่า หรือค่ามัดจำ) — ระบบจะออกเลขที่ใบเสร็จ (ขึ้นต้นด้วย RC-) พร้อมไฟล์ PDF ให้อัตโนมัติ และบันทึกเก็บไว้ในระบบ
+        </p>
+        <div class="space-y-3">
+            <div>
+                <label class="text-xs font-bold text-gray-600 block mb-1">รายการที่รับชำระ</label>
+                <select id="receiptPaymentFor" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c6b7a8]">
+                    <option value="ค่าต่อสัญญาเช่า">ค่าต่อสัญญาเช่า</option>
+                    <option value="ค่ามัดจำ">ค่ามัดจำ</option>
+                    <option value="ค่าเช่า">ค่าเช่า</option>
+                    <option value="อื่นๆ">อื่นๆ</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-600 block mb-1">จำนวนเงินที่ได้รับ (บาท)</label>
+                <input id="receiptAmount" type="number" min="1" placeholder="เช่น 15000" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c6b7a8]">
+            </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-5">
+            <button onclick="closeReceiptModal()" class="text-xs font-bold text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100 transition">ยกเลิก</button>
+            <button onclick="submitReceipt()" class="bg-[#4d0b05] text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-[#360804] transition">
+                <i class="fa-solid fa-check mr-1"></i> ยืนยันออกใบเสร็จ
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwXhqYs3BO17C-OmIFLWlRslq85nwymLm_sNa2me7bddO-ojbSUePRnbVsMDSaitCU/exec";
 
@@ -369,22 +404,52 @@ function renderContracts(list) {
     window.__contractsList = list;
 }
 
+let __receiptTarget = null;
+
 function openReceiptModal(idx) {
     const c = (window.__contractsList || [])[idx];
     if (!c) return;
-    const amount = prompt(`ออกใบเสร็จสำหรับสัญญา ${c.contract_code} (${c.tenant_name})\n\nระบุจำนวนเงิน (บาท):`, '');
-    if (amount === null || amount.trim() === '') return;
-    if (isNaN(Number(amount)) || Number(amount) <= 0) { alert('❌ กรุณาระบุจำนวนเงินเป็นตัวเลขที่ถูกต้อง'); return; }
+    __receiptTarget = c;
 
-    const paymentFor = prompt('รายการ (เช่น ค่าต่อสัญญาเช่า / ค่ามัดจำ):', 'ค่าต่อสัญญาเช่า') || 'ค่าต่อสัญญาเช่า';
+    document.getElementById('receiptModalSubtitle').textContent =
+        `สัญญา ${c.contract_code}  —  ผู้เช่า ${c.tenant_name || '-'}`;
+    document.getElementById('receiptAmount').value = '';
+    document.getElementById('receiptPaymentFor').value = 'ค่าต่อสัญญาเช่า';
 
-    issueReceipt({
+    const modal = document.getElementById('receiptModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.getElementById('receiptAmount').focus();
+}
+
+function closeReceiptModal() {
+    const modal = document.getElementById('receiptModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    __receiptTarget = null;
+}
+
+async function submitReceipt() {
+    if (!__receiptTarget) return;
+    const amountEl = document.getElementById('receiptAmount');
+    const amount   = amountEl.value;
+    const paymentFor = document.getElementById('receiptPaymentFor').value;
+
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+        alert('❌ กรุณาระบุจำนวนเงินเป็นตัวเลขที่ถูกต้อง');
+        amountEl.focus();
+        return;
+    }
+
+    const c = __receiptTarget;
+    await issueReceipt({
         contract_code: c.contract_code,
         tenant_name  : c.tenant_name,
         amount       : Number(amount),
         payment_for  : paymentFor,
         issued_by    : 'ผู้ดูแลระบบ'
     });
+    closeReceiptModal();
 }
 
 async function issueReceipt(payload) {
@@ -395,7 +460,7 @@ async function issueReceipt(payload) {
         const res  = await fetch(WEB_APP_URL, { method: 'POST', body: fd });
         const json = await res.json();
         if (json.status === 'success') {
-            alert(`🧾 ออกใบเสร็จสำเร็จ!\n\nเลขที่ใบเสร็จ: ${json.receipt_code}\n\nเปิดไฟล์ PDF: ${json.doc_url}`);
+            alert(`🧾 ออกใบเสร็จสำเร็จ!\n\nเลขที่ใบเสร็จ: ${json.receipt_code}\nรายการ: ${payload.payment_for}\nจำนวนเงิน: ${Number(payload.amount).toLocaleString()} บาท\n\nเปิดไฟล์ PDF: ${json.doc_url}`);
         } else throw new Error(json.message);
     } catch (err) {
         alert('❌ ออกใบเสร็จไม่สำเร็จ: ' + err.message);
